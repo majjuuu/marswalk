@@ -69,6 +69,8 @@ docs/CONTRACT.md      the data contract
 
 Full version: [docs/CONTRACT.md](docs/CONTRACT.md).
 
+**Pitch prep:** [docs/PITCH_BRIEF.md](docs/PITCH_BRIEF.md) has the demo script, architecture, numbers, slide outline and likely judge questions.
+
 ## How the safe-return boundary works
 
 1. Each step between neighbouring cells costs O2 = breathing for the time it takes
