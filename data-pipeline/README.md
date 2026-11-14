@@ -29,6 +29,16 @@ RN=$(python3 -c "import math;print(3396190*math.radians(18.48854))")
 $PY export_slope.py --tif slope_5m.tif --rover-e $RE --rover-n $RN --half-size 1450 --out ../public/data/slope.json
 $PY make_points.py points_jezero.csv --out ../public/data/points.json
 $PY make_basemap.py ortho_crop.tif --rover-e $RE --rover-n $RN --out ../public/data/basemap.png
+# 4) heights for the 3D view, on exactly the slope grid
+$PY export_elevation.py dtm_crop.tif --rover-e $RE --rover-n $RN --out ../public/data/elevation.json
+# 5) extra base maps (approach from Mughani05/marswalk3d). Needs: pip install scipy Pillow
+mkdir -p raw
+curl -L -o raw/UDL_HRSC-Mosaic_COLOR_Jezero.tif https://marssi.univ-lyon1.fr/data/MARS/MRO/CTX/Jezero/UDL_HRSC-Mosaic_COLOR_Jezero.tif   # 30 MB
+curl -L -o raw/jezeroFinal.tif "https://zenodo.org/api/records/5575824/files/jezeroFinal.tif/content"                                  # 1.4 MB
+curl -L -o raw/Jezero_Thermal_Inertia_v1.tiff "https://zenodo.org/api/records/4931348/files/Jezero_Thermal_Inertia_v1.tiff/content"   # 1.7 MB
+$PY make_layers.py --rover-e $RE --rover-n $RN
+# 6) sharp 3D close-up tiles: 1 m terrain + 25 cm imagery around the points (~30 s, 8.6 MB)
+$PY make_detail_tiles.py --rover-e $RE --rover-n $RN
 ```
 
 Sources: USGS Astrogeology Mars 2020 TRN HiRISE mosaics

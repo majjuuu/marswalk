@@ -1,4 +1,4 @@
-import type { MapPoint, SiteImage, SlopeGrid } from '../types';
+import type { DetailIndex, ElevationGrid, MapLayer, MapPoint, SiteImage, SlopeGrid } from '../types';
 
 /**
  * Everything the app knows about the outside world comes through this interface.
@@ -9,6 +9,12 @@ export interface DataSource {
   loadPoints(): Promise<MapPoint[]>;
   loadSlope(): Promise<SlopeGrid>;
   loadImages(): Promise<SiteImage[]>;
+  /** Only needed by the 3D view. */
+  loadElevation(): Promise<ElevationGrid>;
+  /** Base map choices. Falls back to just `basemap` if layers.json is missing. */
+  loadLayers(): Promise<MapLayer[]>;
+  /** High-res 3D tiles; only fetched when the eye view opens. */
+  loadDetailIndex(): Promise<DetailIndex>;
   basemap: BasemapInfo;
 }
 
@@ -28,6 +34,9 @@ export const staticJsonSource: DataSource = {
   loadPoints: () => getJson<MapPoint[]>('/data/points.json'),
   loadSlope: () => getJson<SlopeGrid>('/data/slope.json'),
   loadImages: () => getJson<SiteImage[]>('/data/images.json'),
+  loadElevation: () => getJson<ElevationGrid>('/data/elevation.json'),
+  loadLayers: () => getJson<MapLayer[]>('/data/layers.json'),
+  loadDetailIndex: () => getJson<DetailIndex>('/data/detail/tiles.json'),
   // HiRISE ortho (USGS Jezero mosaic, 25 cm) resampled to 2 m. Set url: null
   // to fall back to the generated placeholder.
   basemap: { url: '/data/basemap.png', label: 'Basemap: HiRISE ortho, 2 m/px' },

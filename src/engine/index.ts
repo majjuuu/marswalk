@@ -4,4 +4,4 @@ export { canReturn, forecastMinutesToTurnback, getReturnCostField, marginFor, re
 export { buildRoute, estimateRoute, pointAlong, type Route } from './route';
 export { initialRuntime, stepSim, type SimRuntime } from './sim';
 export { getWarnings, type Warning } from './warnings';
-export { cellIndexAt, gridExtent, slopeAt } from './grid';
+export { cellIndexAt, elevationAt, gridExtent, slopeAt } from './grid';

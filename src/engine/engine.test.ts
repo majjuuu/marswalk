@@ -3,7 +3,7 @@ import type { SimState, SlopeGrid } from '../types';
 import { O2_BASE_PER_MIN, O2_EXTRA_PER_M, RESERVE_MIN, TURNBACK_MARGIN_MIN, WARN_MARGIN_MIN } from './config';
 import { walkO2Cost, walkSpeedMPerMin } from './cost';
 import { dijkstra } from './dijkstra';
-import { cellIndexAt } from './grid';
+import { cellIndexAt, elevationAt } from './grid';
 import { buildRoute } from './route';
 import { canReturn, statusForMargin } from './safeReturn';
 import { initialRuntime, stepSim } from './sim';
@@ -130,5 +130,17 @@ describe('minutesToTurnback', () => {
     const done = canReturn(state, g, { route, progress_m: route.length_m }).minutesToTurnback;
     // Astronauts are still at the rover in `state`, so the margin is 10 and drains at 1/min.
     expect(done).toBeCloseTo(10, 6);
+  });
+});
+
+describe('elevationAt', () => {
+  // A tilted plane: height = x / 10. Bilinear blending must reproduce it exactly.
+  const g = makeGrid(20, (_r, c) => ((-50 + (c + 0.5) * 5) / 10));
+  it('interpolates between cell centres', () => {
+    expect(elevationAt(g, { x: 12.3, y: 4 })).toBeCloseTo(1.23, 6);
+    expect(elevationAt(g, { x: -7.5, y: -20 })).toBeCloseTo(-0.75, 6);
+  });
+  it('clamps outside the grid instead of returning NaN', () => {
+    expect(Number.isFinite(elevationAt(g, { x: 999, y: 999 }))).toBe(true);
   });
 });

@@ -25,6 +25,7 @@ interface Props {
   astronauts: XY[];
   onMapClick?: (p: XY) => void;
   onPointClick?: (p: MapPoint) => void;
+  onHover?: (p: XY | null) => void;
 }
 
 // L.CRS.Simple treats coordinates as plain numbers. Leaflet wants [lat, lng],
@@ -36,8 +37,12 @@ const POINT_COLOR = MAP_COLORS.point;
 
 const roverIcon = L.divIcon({ className: 'rover-icon', html: '🚙', iconSize: [24, 24] });
 
-function ClickHandler({ onClick }: { onClick?: (p: XY) => void }) {
-  useMapEvents({ click: (e) => onClick?.({ x: e.latlng.lng, y: e.latlng.lat }) });
+function ClickHandler({ onClick, onHover }: { onClick?: (p: XY) => void; onHover?: (p: XY | null) => void }) {
+  useMapEvents({
+    click: (e) => onClick?.({ x: e.latlng.lng, y: e.latlng.lat }),
+    mousemove: (e) => onHover?.({ x: e.latlng.lng, y: e.latlng.lat }),
+    mouseout: () => onHover?.(null),
+  });
   return null;
 }
 
@@ -106,7 +111,7 @@ export function MapView(p: Props) {
         </CircleMarker>
       ))}
 
-      <ClickHandler onClick={p.onMapClick} />
+      <ClickHandler onClick={p.onMapClick} onHover={p.onHover} />
     </MapContainer>
   );
 }

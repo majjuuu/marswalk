@@ -1,0 +1,71 @@
+[
+  {
+    "id": "hirise",
+    "label": "HiRISE (grey)",
+    "src": "/data/basemap.png",
+    "resolution": "2 m/px",
+    "citation": "Fergason et al. 2020, Mars 2020 TRN HiRISE Orthorectified Image Mosaic, USGS, doi:10.5066/P9QJDP48"
+  },
+  {
+    "id": "colour",
+    "label": "Natural colour",
+    "src": "/data/layers/colour.jpg",
+    "resolution": "2 m/px detail, ~50 m colour",
+    "citation": "HRSC colour mosaic of Jezero (ESA/DLR/FU Berlin; UDL Lyon mosaic), pan-sharpened with Fergason et al. 2020, Mars 2020 TRN HiRISE Orthorectified Image Mosaic, USGS, doi:10.5066/P9QJDP48",
+    "note": "Colour comes from a ~50 m orbital mosaic: it shows broad tones, not individual rocks."
+  },
+  {
+    "id": "minerals",
+    "label": "Minerals (CRISM)",
+    "src": "/data/layers/minerals.jpg",
+    "resolution": "~18 m/px (CRISM), stored at 36 m",
+    "legend": [
+      {
+        "color": "#00ff00",
+        "label": "Mg-carbonate",
+        "percent": 27.6
+      },
+      {
+        "color": "#ff8072",
+        "label": "Olivine + smectite",
+        "percent": 7.8
+      },
+      {
+        "color": "#ff0000",
+        "label": "Olivine",
+        "percent": 1.3
+      },
+      {
+        "color": "#00ffff",
+        "label": "Fe/Mg-smectite",
+        "percent": 0.3
+      },
+      {
+        "color": "#ffd700",
+        "label": "Carbonate + 2.2 um",
+        "percent": 0.2
+      }
+    ],
+    "citation": "Saranathan, Parente & Itoh, dominant mineralogy of the Mars 2020 landing ellipse (CRISM), doi:10.5281/zenodo.5575823",
+    "note": "37% of this area matched a mineral. Bright = high confidence, dull = medium, black = no match. Names are closest-match prototypes, not confirmed identifications."
+  },
+  {
+    "id": "thermal",
+    "label": "Thermal inertia",
+    "src": "/data/layers/thermal.jpg",
+    "resolution": "~100 m/px",
+    "gradient": {
+      "stops": [
+        "#1a1c22",
+        "#1e5c8a",
+        "#786e4e",
+        "#e8dcc8"
+      ],
+      "min": 173,
+      "max": 396,
+      "units": "J m^-2 K^-1 s^-1/2"
+    },
+    "citation": "Edwards and Buz, THEMIS thermal inertia mosaic of Jezero, doi:10.5281/zenodo.4931347",
+    "note": "High = rockier/bedrock (slow to cool), low = dusty or sandy. Useful hint for footing."
+  }
+]

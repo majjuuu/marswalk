@@ -1,7 +1,8 @@
 // Sanity checks on whatever is in public/data. Re-run after swapping in real data.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { MapPoint, SlopeGrid } from '../types';
+import { elevationAt } from './grid';
 import { buildRoute, estimateRoute } from './route';
 import { canReturn } from './safeReturn';
 import { initialRuntime } from './sim';
@@ -10,6 +11,14 @@ const grid: SlopeGrid = JSON.parse(readFileSync('public/data/slope.json', 'utf8'
 const points: MapPoint[] = JSON.parse(readFileSync('public/data/points.json', 'utf8'));
 
 describe('public/data', () => {
+  it('elevation grid (if present) sits on exactly the slope grid, rover at 0 m', () => {
+    if (!existsSync('public/data/elevation.json')) return;
+    const elev: SlopeGrid = JSON.parse(readFileSync('public/data/elevation.json', 'utf8'));
+    for (const k of ['width', 'height', 'cell_m', 'origin_x', 'origin_y'] as const) expect(elev[k]).toBe(grid[k]);
+    expect(elev.data.length).toBe(elev.width * elev.height);
+    expect(Math.abs(elevationAt(elev, { x: 0, y: 0 }))).toBeLessThan(2);
+  });
+
   it('slope grid matches its declared size', () => {
     expect(grid.data.length).toBe(grid.width * grid.height);
   });

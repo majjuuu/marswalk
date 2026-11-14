@@ -32,3 +32,21 @@ export function gridExtent(g: SlopeGrid) {
     south: g.origin_y - g.height * g.cell_m,
   };
 }
+
+/**
+ * Height at any point, blended from the 4 nearest cell centres (bilinear).
+ * WHY blend: a 3D line drawn with "nearest cell" heights looks like stairs.
+ */
+export function elevationAt(g: SlopeGrid, p: XY): number {
+  // Position in "cell-centre units": 0 = centre of column/row 0.
+  const fc = (p.x - g.origin_x) / g.cell_m - 0.5;
+  const fr = (g.origin_y - p.y) / g.cell_m - 0.5;
+  const c0 = Math.max(0, Math.min(g.width - 2, Math.floor(fc)));
+  const r0 = Math.max(0, Math.min(g.height - 2, Math.floor(fr)));
+  const tc = Math.max(0, Math.min(1, fc - c0));
+  const tr = Math.max(0, Math.min(1, fr - r0));
+  const z = (r: number, c: number) => g.data[r * g.width + c];
+  const top = z(r0, c0) * (1 - tc) + z(r0, c0 + 1) * tc;
+  const bottom = z(r0 + 1, c0) * (1 - tc) + z(r0 + 1, c0 + 1) * tc;
+  return top * (1 - tr) + bottom * tr;
+}

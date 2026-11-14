@@ -39,6 +39,40 @@ export interface SiteImage {
   source_url: string;
 }
 
+// ---- public/data/layers.json -------------------------------------------
+/** A picture draped under everything (2D and 3D): HiRISE, colour, minerals, thermal... */
+export interface MapLayer {
+  id: string;
+  label: string;
+  src: string; // image covering exactly the slope grid's extent
+  resolution: string;
+  citation: string;
+  note?: string;
+  /** Categorical key (e.g. minerals), with % of the area. */
+  legend?: { color: string; label: string; percent: number }[];
+  /** Continuous ramp (e.g. thermal inertia). */
+  gradient?: { stops: string[]; min: number; max: number; units: string };
+}
+
+/** Optional geo-reference stored in elevation.json, for lat/lon readouts. */
+export interface GeoRef {
+  rover_lon: number; // degrees east
+  rover_lat: number; // degrees north
+  rover_elevation_m: number; // height of the rover's ground above the Mars areoid
+}
+
+// ---- public/data/detail/tiles.json (optional, 3D close-up) ---------------
+/** 1 m terrain + 25 cm imagery tiles around the work area, for the 3D eye view. */
+export interface DetailIndex {
+  size_m: number; // tile edge length
+  vertices: number; // vertices per edge (size_m / cell_m + 1, edges shared)
+  cell_m: number;
+  height_unit_m: number; // .bin stores int16 heights in these units, relative to the rover
+  tex_px: number;
+  citation: string;
+  tiles: { id: string; x0: number; y0: number; dem: string; tex: string }[]; // x0,y0 = north-west vertex
+}
+
 // ---- public/data/slope.json ---------------------------------------------
 export interface SlopeGrid {
   width: number; // columns
@@ -51,6 +85,13 @@ export interface SlopeGrid {
   /** Row-major slope in degrees, length = width * height. */
   data: number[];
 }
+
+// ---- public/data/elevation.json -----------------------------------------
+/**
+ * Same shape and grid as SlopeGrid, but data = metres RELATIVE TO THE ROVER
+ * (rover ground = 0). Optional: only the 3D view needs it.
+ */
+export type ElevationGrid = SlopeGrid & Partial<GeoRef>;
 
 // ---- simulation ---------------------------------------------------------
 export interface SimState {

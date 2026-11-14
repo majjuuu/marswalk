@@ -24,6 +24,15 @@ npm run data:demo  # back to the FAKE demo data (needs python3, no extra package
 waypoints. Switch to **Navigate**, set speed to 10, press **Play**: astronauts walk, O2 drops,
 the boundary shrinks and changes colour, and banners fire.
 
+**3D view:** switch "2D map / 3D view" in the header.
+- **Overview:** orbit the real terrain (drag, scroll), with adjustable height exaggeration.
+  In Plan mode, clicking the ground adds a waypoint; clicking a target/sample label opens its images.
+- **Close-up detail:** around the rover, target and samples (2 x 1.5 km) the 3D view streams
+  1 m terrain and 25 cm HiRISE imagery tiles, nearest EV1 first. Elsewhere it's 5 m / 2 m.
+- **EV1 eye view:** first-person at 1.7 m, true scale, facing along the route. It follows EV1
+  while the sim runs. Drag to look around. A compass at the bottom shows the direction and
+  distance to the rover.
+
 ## Folder map
 
 ```
@@ -43,6 +52,9 @@ src/
   components/         React UI (map, panels, banner)
   data/source.ts      DataSource interface: the ONLY place that loads data
   hooks/useSim.ts     runs the sim on a timer
+  three/              3D view (three.js), loaded only when opened
+    MarsScene.ts      terrain mesh, draped lines, markers, cameras
+    View3D.tsx        React wrapper + camera controls
 public/data/          points.json, slope.json (the app's inputs)
 data-pipeline/        Python scripts: HiRISE -> public/data (stubbed, has --demo)
 docs/CONTRACT.md      the data contract
@@ -75,12 +87,25 @@ Full version: [docs/CONTRACT.md](docs/CONTRACT.md).
 | Basemap | **Real.** 2 m/px | USGS HiRISE Jezero ortho mosaic (25 cm) |
 | Cheyava Falls | **Real** (to ~tens of m) | Perseverance waypoint, sols 1210-1218 |
 | Site images | **Real** NASA releases | PIA26401 (Mastcam-Z, sol 1217) and PIA26368 (WATSON, sol 1212) in `public/data/images.json`; click Cheyava Falls or a sample |
+| Natural colour | **Real**, ~50 m colour + 2 m detail | HRSC colour mosaic (UDL Lyon) pan-sharpened with HiRISE |
+| Minerals | **Real**, ~18-36 m | CRISM dominant-mineral map (Saranathan, Parente & Itoh), official key; 37% of area matched |
+| Thermal inertia | **Real**, ~100 m | THEMIS mosaic (Edwards & Buz); high = rocky, low = dusty/sandy |
 | Rover spot | Notional | Perseverance's sol 1120 stop, ~1.05 km ESE |
 | Samples, hazards | Notional | hand-placed near real features |
 | Distances | ~5% too long east-west | source projection is equirectangular with lat_ts=0; at 18.5 N that stretches E-W by 1/cos(18.5) |
 | O2 / speed constants | round placeholder numbers (`config.ts`) | from EVA physiology references |
 | Dust devils | hard-coded "12:00-14:00" | forecast / climatology |
 | O2 | one shared number for the team | per-suit telemetry |
+
+## Credits
+
+- The natural-colour, mineral and thermal layers, and the hover lat/lon readout, are ported
+  from **Mughani05's [marswalk3d](https://github.com/Mughani05/marswalk3d)** (layer sources,
+  HSV pan-sharpening, thermal colour ramp). Here they are regenerated on Marswalk's own
+  Bright Angel grid by `data-pipeline/make_layers.py`.
+- Data: USGS Astrogeology (HiRISE DTM/ortho, Fergason et al. 2020), ESA/DLR/FU Berlin HRSC
+  via UDL Lyon, CRISM map by Saranathan/Parente/Itoh, THEMIS thermal inertia by Edwards & Buz,
+  rover images NASA/JPL-Caltech (see each layer's citation in the app).
 
 ## Who owns what
 

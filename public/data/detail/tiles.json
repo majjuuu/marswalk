@@ -1,0 +1,94 @@
+{
+ "size_m": 512,
+ "vertices": 513,
+ "cell_m": 1,
+ "height_unit_m": 0.1,
+ "tex_px": 2048,
+ "citation": "USGS Mars 2020 TRN HiRISE DTM (1 m) and orthomosaic (25 cm), Fergason et al. 2020; colour from HRSC (ESA/DLR/FU Berlin, UDL Lyon mosaic)",
+ "tiles": [
+  {
+   "id": "t_0_0",
+   "x0": -1343.085,
+   "y0": 878.884,
+   "dem": "/data/detail/t_0_0.bin",
+   "tex": "/data/detail/t_0_0.jpg"
+  },
+  {
+   "id": "t_0_1",
+   "x0": -831.085,
+   "y0": 878.884,
+   "dem": "/data/detail/t_0_1.bin",
+   "tex": "/data/detail/t_0_1.jpg"
+  },
+  {
+   "id": "t_0_2",
+   "x0": -319.085,
+   "y0": 878.884,
+   "dem": "/data/detail/t_0_2.bin",
+   "tex": "/data/detail/t_0_2.jpg"
+  },
+  {
+   "id": "t_0_3",
+   "x0": 192.915,
+   "y0": 878.884,
+   "dem": "/data/detail/t_0_3.bin",
+   "tex": "/data/detail/t_0_3.jpg"
+  },
+  {
+   "id": "t_1_0",
+   "x0": -1343.085,
+   "y0": 366.884,
+   "dem": "/data/detail/t_1_0.bin",
+   "tex": "/data/detail/t_1_0.jpg"
+  },
+  {
+   "id": "t_1_1",
+   "x0": -831.085,
+   "y0": 366.884,
+   "dem": "/data/detail/t_1_1.bin",
+   "tex": "/data/detail/t_1_1.jpg"
+  },
+  {
+   "id": "t_1_2",
+   "x0": -319.085,
+   "y0": 366.884,
+   "dem": "/data/detail/t_1_2.bin",
+   "tex": "/data/detail/t_1_2.jpg"
+  },
+  {
+   "id": "t_1_3",
+   "x0": 192.915,
+   "y0": 366.884,
+   "dem": "/data/detail/t_1_3.bin",
+   "tex": "/data/detail/t_1_3.jpg"
+  },
+  {
+   "id": "t_2_0",
+   "x0": -1343.085,
+   "y0": -145.116,
+   "dem": "/data/detail/t_2_0.bin",
+   "tex": "/data/detail/t_2_0.jpg"
+  },
+  {
+   "id": "t_2_1",
+   "x0": -831.085,
+   "y0": -145.116,
+   "dem": "/data/detail/t_2_1.bin",
+   "tex": "/data/detail/t_2_1.jpg"
+  },
+  {
+   "id": "t_2_2",
+   "x0": -319.085,
+   "y0": -145.116,
+   "dem": "/data/detail/t_2_2.bin",
+   "tex": "/data/detail/t_2_2.jpg"
+  },
+  {
+   "id": "t_2_3",
+   "x0": 192.915,
+   "y0": -145.116,
+   "dem": "/data/detail/t_2_3.bin",
+   "tex": "/data/detail/t_2_3.jpg"
+  }
+ ]
+}
