@@ -1,141 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Banner } from './components/Banner';
-import { ModeSwitch, NavControls, PlanControls, type Mode } from './components/Controls';
-import { LayerPanel } from './components/LayerPanel';
-import { MapView, type LayerVisibility } from './components/MapView';
-import { ImagePanel } from './components/ImagePanel';
-import { DustDevilPanel, Readout, SampleChecklist } from './components/SidePanels';
-import { staticJsonSource as source } from './data/source';
-import { buildRoute, canReturn, estimateRoute, getWarnings, initialRuntime, pointAlong, type Route } from './engine';
-import { useSim } from './hooks/useSim';
-import type { MapPoint, SimState, SiteImage, SlopeGrid, XY } from './types';
-
-const ROVER: XY = { x: 0, y: 0 }; // by contract the rover is the origin
-
-export default function App() {
-  const [grid, setGrid] = useState<SlopeGrid | null>(null);
-  const [points, setPoints] = useState<MapPoint[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<Mode>('plan');
-  const [waypoints, setWaypoints] = useState<XY[]>([]);
-  const [layers, setLayers] = useState<LayerVisibility>({ basemap: true, slope: true, boundary: true, route: true, points: true });
-  const [collected, setCollected] = useState<Record<string, boolean>>({});
-  const [speed, setSpeed] = useState(2);
-  const [navRoute, setNavRoute] = useState<Route | null>(null);
-  const [images, setImages] = useState<SiteImage[]>([]);
-  const [selected, setSelected] = useState<MapPoint | null>(null);
-
-  useEffect(() => {
-    Promise.all([source.loadSlope(), source.loadPoints()])
-      .then(([g, pts]) => {
-        setGrid(g);
-        setPoints(pts);
-        // Start with a sensible default plan: walk to the main target.
-        const target = pts.find((p) => p.type === 'target');
-        if (target) setWaypoints([{ x: target.x, y: target.y }]);
-      })
-      .catch((e) => setError(String(e)));
-    // Images are optional: the map still works if this file is missing.
-    source.loadImages().then(setImages).catch(() => setImages([]));
-  }, []);
-
-  const planRoute = useMemo(() => (grid ? buildRoute(grid, ROVER, waypoints) : null), [grid, waypoints]);
-  const sim = useSim(grid, navRoute, ROVER, speed);
-
-  // Plan mode previews the boundary as it will look on ARRIVAL at the last waypoint.
-  const planPreview = useMemo(() => {
-    if (!grid || !planRoute) return null;
-    const est = estimateRoute(grid, planRoute);
-    const end = pointAlong(planRoute, planRoute.length_m);
-    const start = initialRuntime(ROVER).state;
-    const atArrival: SimState = { ...start, astronauts: [end, end], o2_min_left: start.o2_min_left - est.o2 };
-    return { est, safe: canReturn(atArrival, grid) };
-  }, [grid, planRoute]);
-
-  const navSafe = useMemo(
-    () =>
-      grid && mode === 'navigate'
-        ? canReturn(sim.rt.state, grid, { route: navRoute ?? planRoute!, progress_m: sim.rt.progress_m })
-        : null,
-    [grid, mode, sim.rt.state, sim.rt.progress_m, navRoute, planRoute],
-  );
-
-  if (error) return <div className="loading">Could not load data: {error}</div>;
-  if (!grid || !planRoute) return <div className="loading">Loading terrain...</div>;
-
-  const safe = mode === 'plan' ? planPreview?.safe ?? null : navSafe;
-  const activeRoute = mode === 'plan' ? planRoute : navRoute ?? planRoute;
-  const warnings = mode === 'navigate' && navSafe ? getWarnings(sim.rt.state, navSafe, activeRoute, sim.rt.progress_m, grid, points) : [];
-
-  const switchMode = (m: Mode) => {
-    setMode(m);
-    sim.reset();
-    setNavRoute(m === 'navigate' ? planRoute : null);
-  };
-
-  const returnToRover = () => {
-    setNavRoute(buildRoute(grid, sim.rt.state.astronauts[0], [ROVER]));
-    sim.followNewRoute();
-  };
-
-  const summary = planPreview
-    ? `${(planRoute.length_m / 1000).toFixed(2)} km, ~${planPreview.est.minutes.toFixed(0)} min walk, ` +
-      `${planPreview.est.o2.toFixed(0)} min O2 out. Margin at arrival: ${planPreview.safe.margin_min?.toFixed(0)} min` +
-      (planRoute.unreachableLegs ? ` | ${planRoute.unreachableLegs} leg(s) blocked by steep ground!` : '')
-    : '';
-
-  return (
-    <div className="app">
-      <header>
-        <h1>Marswalk</h1>
-        <span className="muted">Bright Angel / Neretva Vallis EVA (real HiRISE terrain, notional EVA)</span>
-        <ModeSwitch mode={mode} onChange={switchMode} />
-      </header>
-      <main>
-        <div className="map-wrap">
-          <MapView
-            grid={grid}
-            basemapUrl={source.basemap.url}
-            points={points}
-            layers={layers}
-            safe={safe}
-            route={activeRoute.points}
-            waypoints={mode === 'plan' ? waypoints : []}
-            astronauts={sim.rt.state.astronauts}
-            onMapClick={mode === 'plan' ? (p) => setWaypoints((w) => [...w, p]) : undefined}
-            onPointClick={(pt) => setSelected(pt.type === 'target' || pt.type === 'sample' ? pt : null)}
-          />
-          <Banner warnings={warnings} />
-        </div>
-        <aside>
-          {selected && <ImagePanel point={selected} images={images} onClose={() => setSelected(null)} />}
-          {mode === 'plan' ? (
-            <PlanControls
-              waypointCount={waypoints.length}
-              summary={summary}
-              onUndo={() => setWaypoints((w) => w.slice(0, -1))}
-              onClear={() => setWaypoints([])}
-            />
-          ) : (
-            <NavControls
-              playing={sim.playing}
-              speed={speed}
-              onPlayPause={() => sim.setPlaying(!sim.playing)}
-              onReset={() => switchMode('navigate')}
-              onReturn={returnToRover}
-              onSpeed={setSpeed}
-            />
-          )}
-          <Readout state={sim.rt.state} safe={safe} />
-          <SampleChecklist points={points} collected={collected} onToggle={(id) => setCollected((c) => ({ ...c, [id]: !c[id] }))} />
-          <DustDevilPanel clock={sim.rt.state.clock_local} />
-          <LayerPanel
-            layers={layers}
-            onChange={setLayers}
-            resolution={{ slope: `${grid.cell_m} m/cell`, basemap: source.basemap.label.replace('Basemap: ', ''), boundary: `${grid.cell_m} m/cell` }}
-          />
-        </aside>
-      </main>
-    </div>
-  );
+import { useEffect } from 'react';
+import { Compass, ChevronLeft, ChevronRight, ClipboardList, MapPinned, Radar, ExternalLink } from 'lucide-react';
+import { useHUD } from './store';
+import { stopById } from './data/stops';
+import { PanoramaViewer } from './components/PanoramaViewer';
+import { RoverMiniMap } from './components/RoverMiniMap';
+import { SciencePanel } from './components/SciencePanel';
+import { InstrumentSelector } from './components/InstrumentSelector';
+import { MissionChecklist } from './components/MissionChecklist';
+function App(){
+ const stopId=useHUD(s=>s.currentStopId),jump=useHUD(s=>s.jump),heading=useHUD(s=>s.headingDeg),toggle=useHUD(s=>s.toggleMission),completed=useHUD(s=>s.completed);
+ const stop=stopById[stopId];
+ useEffect(()=>{function keys(e:KeyboardEvent){if(e.target instanceof HTMLInputElement)return;const i=stop.neighbors.findIndex(s=>s===stopId);void i;if(e.key==='ArrowRight'&&stop.neighbors[0])jump(stop.neighbors[0]);if(e.key==='Escape')useHUD.getState().selectTarget(null);}window.addEventListener('keydown',keys);return()=>window.removeEventListener('keydown',keys);},[stop,jump,stopId]);
+ return <main className="app">
+  <PanoramaViewer/>
+  <div className="hud-top"><div className="brand"><div className="brand-mark"><Radar size={22}/></div><div><strong>MARSWALK</strong><span>BRIGHT ANGEL · SURFACE HUD</span></div></div><div className="top-right"><span className="demo-tag">USGS TERRAIN</span><button className="hud-button" onClick={toggle}><ClipboardList size={16}/> Missions</button></div></div>
+  <div className="left-rail"><div className="status-card"><span className="eyebrow">NEAREST VIEWPOINT</span><h1>{stop.label}</h1><p>{stop.description}</p><div className="status-row"><span><Compass size={14}/> {Math.round(heading)}° heading</span><span>LOCAL STOP {stopId.toUpperCase()}</span></div></div><div className="controls-hint">AIM AT GROUND · CLICK TO MOVE <span>·</span> M MISSIONS · E CLOSE PANEL</div></div>
+  <div className="right-rail"><RoverMiniMap/><InstrumentSelector/></div>
+  <div className="bottom-controls"><div className="viewpoint-nav"><span className="eyebrow">JUMP TO VIEWPOINT</span><div className="nav-stops">{stop.neighbors.map((id,i)=><button key={id} className="nav-stop" onClick={()=>jump(id)}>{i===0?<ChevronLeft size={16}/>:<ChevronRight size={16}/>} {stopById[id].label}</button>)}</div></div><div className="sources"><MapPinned size={14}/> Illustrative viewpoints <span>·</span> <a href="https://science.nasa.gov/photojournal/perseverance-captures-bright-angel-in-360-degrees/" target="_blank" rel="noreferrer">Real NASA panorama <ExternalLink size={12}/></a></div></div>
+  <SciencePanel/><MissionChecklist/>
+  <div className="progress-pill">MISSION PROGRESS {['visit','mineral','layers'].filter(x=>completed[x]).length}/3</div>
+ </main>;
 }
+export default App;

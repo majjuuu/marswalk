@@ -1,9 +1,0 @@
-id,name,type,easting,northing,note,sample_kind
-rover,Rover parking,rover,1000000.0,2000000.0,Parked on flat bedrock,
-cheyava,Cheyava Falls,target,999100.0,2000050.0,Leopard-spot outcrop (FAKE position),
-s1,Sample A (spot),sample,999120.0,2000095.0,Leopard spots visible,spot
-s2,Sample B (spot),sample,999070.0,2000020.0,Poppy-seed texture,spot
-s3,Sample C (no-spot),sample,999140.0,1999990.0,Control rock without spots,no-spot
-blank,Contamination blank,sample,999150.0,2000060.0,Open witness tube on site,blank
-haz1,Rockfall zone,hazard,999440.0,2000200.0,Below channel wall - do not linger,
-haz2,Loose sand,hazard,999750.0,1999850.0,Wheel/boot sinkage risk,
