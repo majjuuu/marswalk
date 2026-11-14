@@ -3,11 +3,12 @@ import { Banner } from './components/Banner';
 import { ModeSwitch, NavControls, PlanControls, type Mode } from './components/Controls';
 import { LayerPanel } from './components/LayerPanel';
 import { MapView, type LayerVisibility } from './components/MapView';
+import { ImagePanel } from './components/ImagePanel';
 import { DustDevilPanel, Readout, SampleChecklist } from './components/SidePanels';
 import { staticJsonSource as source } from './data/source';
 import { buildRoute, canReturn, estimateRoute, getWarnings, initialRuntime, pointAlong, type Route } from './engine';
 import { useSim } from './hooks/useSim';
-import type { MapPoint, SimState, SlopeGrid, XY } from './types';
+import type { MapPoint, SimState, SiteImage, SlopeGrid, XY } from './types';
 
 const ROVER: XY = { x: 0, y: 0 }; // by contract the rover is the origin
 
@@ -21,6 +22,8 @@ export default function App() {
   const [collected, setCollected] = useState<Record<string, boolean>>({});
   const [speed, setSpeed] = useState(2);
   const [navRoute, setNavRoute] = useState<Route | null>(null);
+  const [images, setImages] = useState<SiteImage[]>([]);
+  const [selected, setSelected] = useState<MapPoint | null>(null);
 
   useEffect(() => {
     Promise.all([source.loadSlope(), source.loadPoints()])
@@ -32,6 +35,8 @@ export default function App() {
         if (target) setWaypoints([{ x: target.x, y: target.y }]);
       })
       .catch((e) => setError(String(e)));
+    // Images are optional: the map still works if this file is missing.
+    source.loadImages().then(setImages).catch(() => setImages([]));
   }, []);
 
   const planRoute = useMemo(() => (grid ? buildRoute(grid, ROVER, waypoints) : null), [grid, waypoints]);
@@ -47,7 +52,13 @@ export default function App() {
     return { est, safe: canReturn(atArrival, grid) };
   }, [grid, planRoute]);
 
-  const navSafe = useMemo(() => (grid && mode === 'navigate' ? canReturn(sim.rt.state, grid) : null), [grid, mode, sim.rt.state]);
+  const navSafe = useMemo(
+    () =>
+      grid && mode === 'navigate'
+        ? canReturn(sim.rt.state, grid, { route: navRoute ?? planRoute!, progress_m: sim.rt.progress_m })
+        : null,
+    [grid, mode, sim.rt.state, sim.rt.progress_m, navRoute, planRoute],
+  );
 
   if (error) return <div className="loading">Could not load data: {error}</div>;
   if (!grid || !planRoute) return <div className="loading">Loading terrain...</div>;
@@ -92,10 +103,12 @@ export default function App() {
             waypoints={mode === 'plan' ? waypoints : []}
             astronauts={sim.rt.state.astronauts}
             onMapClick={mode === 'plan' ? (p) => setWaypoints((w) => [...w, p]) : undefined}
+            onPointClick={(pt) => setSelected(pt.type === 'target' || pt.type === 'sample' ? pt : null)}
           />
           <Banner warnings={warnings} />
         </div>
         <aside>
+          {selected && <ImagePanel point={selected} images={images} onClose={() => setSelected(null)} />}
           {mode === 'plan' ? (
             <PlanControls
               waypointCount={waypoints.length}

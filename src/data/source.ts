@@ -1,4 +1,4 @@
-import type { MapPoint, SlopeGrid } from '../types';
+import type { MapPoint, SiteImage, SlopeGrid } from '../types';
 
 /**
  * Everything the app knows about the outside world comes through this interface.
@@ -8,6 +8,7 @@ import type { MapPoint, SlopeGrid } from '../types';
 export interface DataSource {
   loadPoints(): Promise<MapPoint[]>;
   loadSlope(): Promise<SlopeGrid>;
+  loadImages(): Promise<SiteImage[]>;
   basemap: BasemapInfo;
 }
 
@@ -26,6 +27,7 @@ async function getJson<T>(url: string): Promise<T> {
 export const staticJsonSource: DataSource = {
   loadPoints: () => getJson<MapPoint[]>('/data/points.json'),
   loadSlope: () => getJson<SlopeGrid>('/data/slope.json'),
+  loadImages: () => getJson<SiteImage[]>('/data/images.json'),
   // HiRISE ortho (USGS Jezero mosaic, 25 cm) resampled to 2 m. Set url: null
   // to fall back to the generated placeholder.
   basemap: { url: '/data/basemap.png', label: 'Basemap: HiRISE ortho, 2 m/px' },

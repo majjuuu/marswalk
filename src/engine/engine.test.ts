@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SimState, SlopeGrid } from '../types';
-import { RESERVE_MIN, TURNBACK_MARGIN_MIN, WARN_MARGIN_MIN } from './config';
-import { walkO2Cost } from './cost';
+import { O2_BASE_PER_MIN, O2_EXTRA_PER_M, RESERVE_MIN, TURNBACK_MARGIN_MIN, WARN_MARGIN_MIN } from './config';
+import { walkO2Cost, walkSpeedMPerMin } from './cost';
 import { dijkstra } from './dijkstra';
 import { cellIndexAt } from './grid';
 import { buildRoute } from './route';
@@ -102,5 +102,33 @@ describe('sim', () => {
     expect(standing.state.o2_min_left).toBeCloseTo(99, 6);
     expect(walking.state.o2_min_left).toBeLessThan(standing.state.o2_min_left);
     expect(walking.progress_m).toBeGreaterThan(30);
+  });
+});
+
+describe('minutesToTurnback', () => {
+  // Flat grid, route heading straight east (away from the rover).
+  const g = makeGrid(101, () => 0);
+  const route = buildRoute(g, { x: 0.1, y: -0.1 }, [{ x: 240, y: -0.1 }]);
+  const start = (o2: number): SimState => ({ ...initialRuntime({ x: 0.1, y: -0.1 }, o2).state });
+
+  it('walking away from the rover shrinks the margin faster than standing still', () => {
+    const state = start(RESERVE_MIN + 10); // margin = 10 min at the rover
+    const standing = canReturn(state, g).minutesToTurnback;
+    const walking = canReturn(state, g, { route, progress_m: 0 }).minutesToTurnback;
+    expect(standing).toBeCloseTo(10, 6);
+
+    // On flat ground, each walking minute: breathing + effort (1 + v*extra) AND the walk
+    // home gets longer by the same amount -> margin falls at 2 * (1 + v*extra) per minute.
+    const v = walkSpeedMPerMin(0);
+    const expected = 10 / (2 * (O2_BASE_PER_MIN + v * O2_EXTRA_PER_M));
+    expect(walking).toBeLessThan(standing);
+    expect(walking).toBeCloseTo(expected, 0);
+  });
+
+  it('after the route ends, the countdown continues at the resting rate', () => {
+    const state = start(RESERVE_MIN + 10);
+    const done = canReturn(state, g, { route, progress_m: route.length_m }).minutesToTurnback;
+    // Astronauts are still at the rover in `state`, so the margin is 10 and drains at 1/min.
+    expect(done).toBeCloseTo(10, 6);
   });
 });

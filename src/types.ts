@@ -23,6 +23,22 @@ export interface MapPoint {
   sample_kind?: SampleKind;
 }
 
+// ---- public/data/images.json --------------------------------------------
+/** A real rover image tied to one or more map points (shown in the image panel). */
+export interface SiteImage {
+  id: string; // e.g. NASA photojournal id "PIA26368"
+  point_ids: string[];
+  src: string;
+  title: string;
+  role: 'context' | 'closeup';
+  camera: string;
+  sol: number;
+  date: string; // Earth date taken, YYYY-MM-DD
+  credit: string; // exactly as NASA gives it
+  caption: string;
+  source_url: string;
+}
+
 // ---- public/data/slope.json ---------------------------------------------
 export interface SlopeGrid {
   width: number; // columns
@@ -53,6 +69,7 @@ export interface SafeReturn {
   /** Largest ring of the reachable area (outer boundary). */
   boundaryPolygon: XYPair[];
   status: ReturnStatus;
+  /** Minutes until margin hits 0: walking the route if a plan is given, else standing still. */
   minutesToTurnback: number;
   /** Extension: every contour ring (outer + holes around steep patches). */
   rings?: XYPair[][];

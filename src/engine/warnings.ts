@@ -20,8 +20,9 @@ export function getWarnings(
   const out: Warning[] = [];
   const mins = Math.floor(safe.minutesToTurnback);
 
-  if (safe.status === 'turnback') out.push({ level: 'danger', text: `TURN BACK NOW (${mins} min margin)` });
-  else if (safe.status === 'warn') out.push({ level: 'warn', text: `Turn back in ${mins} min` });
+  const margin = Math.max(0, Math.floor(safe.margin_min ?? 0));
+  if (safe.status === 'turnback') out.push({ level: 'danger', text: `TURN BACK NOW (${margin} min O2 margin)` });
+  else if (safe.status === 'warn') out.push({ level: 'warn', text: `Turn back in ${mins} min at current pace` });
 
   // Scan ahead along the route for ground steeper than we can walk.
   for (let s = progress_m; s <= Math.min(route.length_m, progress_m + LOOKAHEAD_M); s += g.cell_m) {

@@ -24,6 +24,7 @@ interface Props {
   waypoints: XY[];
   astronauts: XY[];
   onMapClick?: (p: XY) => void;
+  onPointClick?: (p: MapPoint) => void;
 }
 
 // L.CRS.Simple treats coordinates as plain numbers. Leaflet wants [lat, lng],
@@ -87,7 +88,10 @@ export function MapView(p: Props) {
               key={pt.id}
               center={ll(pt.x, pt.y)}
               radius={pt.type === 'hazard' ? 9 : 6}
+              // bubblingMouseEvents: false stops the click also adding a waypoint in Plan mode.
               pathOptions={{ color: POINT_COLOR[pt.type], fillOpacity: pt.type === 'hazard' ? 0.25 : 0.9 }}
+              bubblingMouseEvents={false}
+              eventHandlers={{ click: () => p.onPointClick?.(pt) }}
             >
               <Tooltip permanent direction="right" className="pt-label">
                 {pt.name}

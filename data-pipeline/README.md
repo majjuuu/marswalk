@@ -36,6 +36,27 @@ Sources: USGS Astrogeology Mars 2020 TRN HiRISE mosaics
 NASA Mars Trek as "MRO HiRISE, Jezero DEM/Mosaic, Controlled"). Cheyava Falls position from
 the Perseverance waypoints file (`mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json`).
 
+## Check: does our slope agree with where Perseverance drove?
+
+```bash
+curl -sSLO https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json
+$PY slope_from_dtm.py dtm_crop.tif --cell 5 --agg max --out slope_5m_max.tif
+$PY check_traverse.py M20_traverse.json slope_5m.tif slope_5m_max.tif
+```
+
+Result (12.4 km of real traverse inside our 5 x 4 km crop):
+
+| 5 m resampling | path median | path p99 | path > 20 deg | all terrain > 20 deg |
+|---|---|---|---|---|
+| mean (used) | 7.0 | 18.7 | **0.3%** | 10.3% |
+| max | 10.0 | 22.8 | **4.4%** | 22.0% |
+
+Rover planners steer around steep ground, so a path that drove through "impassable"
+cells means false walls. `max` puts 1 in 23 metres of a real drive on a wall, which is
+mostly 1 m DTM noise; `mean` agrees with the drive. We use `mean`. Caveat: averaging can hide
+a single short ledge, and the rover's limits aren't an astronaut's, so this only shows
+`max` is too strict, not that `mean` is exactly right.
+
 ## Original plan (GDAL CLI version)
 
 1. **Get the products.** HiRISE DTM + orthoimage covering Bright Angel / Neretva Vallis

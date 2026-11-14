@@ -47,14 +47,16 @@ If you change something here, change it there too and tell the team.
 
 ## Safe-return
 
-`canReturn(state, slopeGrid)` in `src/engine/safeReturn.ts` returns:
+`canReturn(state, slopeGrid, plan?)` in `src/engine/safeReturn.ts` returns
+(`plan` = `{ route, progress_m }`, optional extension):
 
 ```ts
 {
   maxDistance_m,        // farthest straight-line distance from the rover still inside the boundary
   boundaryPolygon,      // [x, y][] largest ring of the reachable area
   status,               // "ok" | "warn" | "turnback"
-  minutesToTurnback,    // margin / resting burn rate (optimistic: assumes standing still)
+  minutesToTurnback,    // with plan: minutes until margin hits 0 if they keep walking the route
+                        // at sim pace (then stand at its end). Without plan: margin / resting rate.
   rings?,               // extension: all rings (outer + holes)
   margin_min?,          // extension: O2 left after the worst astronaut walks home, beyond reserve
 }

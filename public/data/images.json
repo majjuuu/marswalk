@@ -1,0 +1,28 @@
+[
+  {
+    "id": "PIA26401",
+    "point_ids": ["cheyava", "s1", "s2", "s3", "blank"],
+    "src": "/data/images/PIA26401.jpg",
+    "title": "Mastcam-Z views the 'Cheyava Falls' workspace",
+    "role": "context",
+    "camera": "Mastcam-Z",
+    "sol": 1217,
+    "date": "2024-07-23",
+    "credit": "NASA/JPL-Caltech/ASU/MSSS",
+    "caption": "Cheyava Falls is the arrowhead-shaped rock on the left: drill hole where the Sapphire Canyon core was taken, white abrasion patch beside it. Use this to recognise the rock on arrival.",
+    "source_url": "https://www.jpl.nasa.gov/images/pia26401-mastcam-z-views-the-cheyava-falls-workspace/"
+  },
+  {
+    "id": "PIA26368",
+    "point_ids": ["cheyava", "s1", "s2", "s3", "blank"],
+    "src": "/data/images/PIA26368_annotated.jpg",
+    "title": "WATSON close-up of the 'leopard spots'",
+    "role": "closeup",
+    "camera": "WATSON (SHERLOC)",
+    "sol": 1212,
+    "date": "2024-07-18",
+    "credit": "NASA/JPL-Caltech/MSSS",
+    "caption": "Millimetre-size off-white spots with dark rims in the reddish part of the rock. This is what a 'spot' sample should look like up close.",
+    "source_url": "https://www.jpl.nasa.gov/images/pia26368-perseverance-finds-a-rock-with-leopard-spots/"
+  }
+]

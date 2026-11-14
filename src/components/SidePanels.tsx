@@ -13,6 +13,7 @@ export function Readout({ state, safe }: { state: SimState; safe: SafeReturn | n
         <dt>Elapsed</dt><dd>{state.elapsed_min.toFixed(0)} min</dd>
         <dt>Reserve</dt><dd>{RESERVE_MIN} min</dd>
         <dt>Margin</dt><dd>{safe?.margin_min !== undefined ? `${safe.margin_min.toFixed(0)} min` : '-'}</dd>
+        <dt>Turn back in</dt><dd>{safe ? `${Math.floor(safe.minutesToTurnback)} min` : '-'}</dd>
         <dt>Max range</dt><dd>{safe ? `${(safe.maxDistance_m / 1000).toFixed(2)} km` : '-'}</dd>
         <dt>Status</dt><dd className="status-text">{safe?.status ?? '-'}</dd>
       </dl>

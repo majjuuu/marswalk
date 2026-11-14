@@ -53,7 +53,7 @@ docs/CONTRACT.md      the data contract
 - Local meters, `(0,0)` = rover, `x` east, `y` north.
 - `points.json`: `[{ id, name, type: rover|target|sample|hazard, x, y, note? }]`
 - `slope.json`: `{ width, height, cell_m, origin_x, origin_y, data }`, row 0 = north.
-- `canReturn(state, grid) -> { maxDistance_m, boundaryPolygon, status, minutesToTurnback }`
+- `canReturn(state, grid, plan?) -> { maxDistance_m, boundaryPolygon, status, minutesToTurnback }`
 
 Full version: [docs/CONTRACT.md](docs/CONTRACT.md).
 
@@ -74,6 +74,7 @@ Full version: [docs/CONTRACT.md](docs/CONTRACT.md).
 | Slope grid | **Real.** 580x580 @ 5 m around the rover | USGS controlled HiRISE Jezero DTM (1 m) -> Horn slope -> 5 m mean. DTM noise inflates slope; `--agg max` is the cautious option |
 | Basemap | **Real.** 2 m/px | USGS HiRISE Jezero ortho mosaic (25 cm) |
 | Cheyava Falls | **Real** (to ~tens of m) | Perseverance waypoint, sols 1210-1218 |
+| Site images | **Real** NASA releases | PIA26401 (Mastcam-Z, sol 1217) and PIA26368 (WATSON, sol 1212) in `public/data/images.json`; click Cheyava Falls or a sample |
 | Rover spot | Notional | Perseverance's sol 1120 stop, ~1.05 km ESE |
 | Samples, hazards | Notional | hand-placed near real features |
 | Distances | ~5% too long east-west | source projection is equirectangular with lat_ts=0; at 18.5 N that stretches E-W by 1/cos(18.5) |
