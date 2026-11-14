@@ -1,6 +1,6 @@
 import type { ReturnStatus, SafeReturn, SimState, SlopeGrid, XY } from '../types';
 import { O2_BASE_PER_MIN, RESERVE_MIN, TURNBACK_MARGIN_MIN, WARN_MARGIN_MIN } from './config';
-import { contourRings } from './contour';
+import { contourRings, ringArea } from './contour';
 import { dijkstra, type DijkstraResult } from './dijkstra';
 import { cellCenter, cellIndexAt } from './grid';
 
@@ -49,7 +49,10 @@ export function canReturn(state: SimState, g: SlopeGrid): SafeReturn {
     }
   }
 
-  const rings = budget > 0 ? contourRings(g, field.cost, budget) : [];
+  // Real terrain has lots of isolated steep 5 m cells; each would draw a tiny
+  // hole. Drop rings smaller than ~20 cells so the boundary stays readable.
+  const minArea = 20 * g.cell_m * g.cell_m;
+  const rings = budget > 0 ? contourRings(g, field.cost, budget).filter((r) => Math.abs(ringArea(r)) >= minArea) : [];
   return {
     maxDistance_m: Math.sqrt(maxD2),
     boundaryPolygon: rings[0] ?? [],

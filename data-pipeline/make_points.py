@@ -3,6 +3,8 @@
 
 CSV columns (header required):
   id,name,type,easting,northing,note,sample_kind
+  (or lon,lat instead of easting,northing: converted with the Mars 2000 sphere,
+   equirectangular lat_ts=0, the projection of the USGS Jezero HiRISE mosaics)
   - type: rover | target | sample | hazard
   - exactly one row should have type=rover; it becomes (0, 0)
   - note and sample_kind (spot | no-spot | blank) are optional
@@ -13,6 +15,16 @@ Example:
 import argparse
 import csv
 import json
+import math
+
+MARS_R = 3396190.0
+
+
+def projected(r):
+    """(easting, northing) in meters from either easting/northing or lon/lat columns."""
+    if r.get("easting"):
+        return float(r["easting"]), float(r["northing"])
+    return MARS_R * math.radians(float(r["lon"])), MARS_R * math.radians(float(r["lat"]))
 
 VALID_TYPES = {"rover", "target", "sample", "hazard"}
 
@@ -22,7 +34,7 @@ def convert(rows, rover_e=None, rover_n=None):
         rovers = [r for r in rows if r["type"] == "rover"]
         if len(rovers) != 1:
             raise SystemExit("Need exactly one rover row, or pass --rover-e/--rover-n")
-        rover_e, rover_n = float(rovers[0]["easting"]), float(rovers[0]["northing"])
+        rover_e, rover_n = projected(rovers[0])
 
     out = []
     for r in rows:
@@ -33,8 +45,8 @@ def convert(rows, rover_e=None, rover_n=None):
             "name": r["name"],
             "type": r["type"],
             # Local grid = projected meters minus rover position (x east, y north).
-            "x": round(float(r["easting"]) - rover_e, 1),
-            "y": round(float(r["northing"]) - rover_n, 1),
+            "x": round(projected(r)[0] - rover_e, 1),
+            "y": round(projected(r)[1] - rover_n, 1),
         }
         if r.get("note"):
             p["note"] = r["note"]

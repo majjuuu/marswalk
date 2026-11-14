@@ -4,3 +4,12 @@ dist
 __pycache__
 *.tif
 *.IMG
+.venv
+# raw / intermediate rasters from data-pipeline (re-create with the README commands)
+*.tiff
+*.jp2
+*.JP2
+*.aux.xml
+*.img
+data-pipeline/*.json
+!data-pipeline/*.example.json

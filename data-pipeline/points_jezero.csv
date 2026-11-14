@@ -1,0 +1,9 @@
+id,name,type,lon,lat,note,sample_kind
+rover,Rover parking,rover,77.32059,18.48854,Notional EVA rover parked at Perseverance's sol 1120 stop,
+cheyava,Cheyava Falls,target,77.30519,18.49748,Real: Perseverance stopped here sols 1210-1218 (Jul 2024); Sapphire Canyon core,
+s1,Sample A (spot),sample,77.30500,18.49760,Notional: leopard spots,spot
+s2,Sample B (spot),sample,77.30545,18.49738,Notional: poppy-seed texture,spot
+s3,Sample C (no-spot),sample,77.30470,18.49730,Notional: control rock without spots,no-spot
+blank,Contamination blank,sample,77.30560,18.49725,Notional: open witness tube on site,blank
+haz1,Rockfall zone,hazard,77.30300,18.49830,Notional: below the steep north channel wall,
+haz2,Ripple field (loose sand),hazard,77.30700,18.48650,Notional: aeolian ripples on the channel floor,

@@ -26,6 +26,7 @@ async function getJson<T>(url: string): Promise<T> {
 export const staticJsonSource: DataSource = {
   loadPoints: () => getJson<MapPoint[]>('/data/points.json'),
   loadSlope: () => getJson<SlopeGrid>('/data/slope.json'),
-  // Swap to { url: '/data/basemap.png', label: 'Basemap: HiRISE ortho, 1 m/px' }
-  basemap: { url: null, label: 'Basemap: placeholder' },
+  // HiRISE ortho (USGS Jezero mosaic, 25 cm) resampled to 2 m. Set url: null
+  // to fall back to the generated placeholder.
+  basemap: { url: '/data/basemap.png', label: 'Basemap: HiRISE ortho, 2 m/px' },
 };

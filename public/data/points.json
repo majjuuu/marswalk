@@ -5,66 +5,66 @@
     "type": "rover",
     "x": 0.0,
     "y": 0.0,
-    "note": "Parked on flat bedrock"
+    "note": "Notional EVA rover parked at Perseverance's sol 1120 stop"
   },
   {
     "id": "cheyava",
     "name": "Cheyava Falls",
     "type": "target",
-    "x": -900.0,
-    "y": 50.0,
-    "note": "Leopard-spot outcrop (FAKE position)"
+    "x": -912.8,
+    "y": 529.9,
+    "note": "Real: Perseverance stopped here sols 1210-1218 (Jul 2024); Sapphire Canyon core"
   },
   {
     "id": "s1",
     "name": "Sample A (spot)",
     "type": "sample",
-    "x": -880.0,
-    "y": 95.0,
-    "note": "Leopard spots visible",
+    "x": -924.1,
+    "y": 537.0,
+    "note": "Notional: leopard spots",
     "sample_kind": "spot"
   },
   {
     "id": "s2",
     "name": "Sample B (spot)",
     "type": "sample",
-    "x": -930.0,
-    "y": 20.0,
-    "note": "Poppy-seed texture",
+    "x": -897.4,
+    "y": 524.0,
+    "note": "Notional: poppy-seed texture",
     "sample_kind": "spot"
   },
   {
     "id": "s3",
     "name": "Sample C (no-spot)",
     "type": "sample",
-    "x": -860.0,
-    "y": -10.0,
-    "note": "Control rock without spots",
+    "x": -941.9,
+    "y": 519.2,
+    "note": "Notional: control rock without spots",
     "sample_kind": "no-spot"
   },
   {
     "id": "blank",
     "name": "Contamination blank",
     "type": "sample",
-    "x": -850.0,
-    "y": 60.0,
-    "note": "Open witness tube on site",
+    "x": -888.5,
+    "y": 516.3,
+    "note": "Notional: open witness tube on site",
     "sample_kind": "blank"
   },
   {
     "id": "haz1",
     "name": "Rockfall zone",
     "type": "hazard",
-    "x": -560.0,
-    "y": 200.0,
-    "note": "Below channel wall - do not linger"
+    "x": -1042.6,
+    "y": 578.5,
+    "note": "Notional: below the steep north channel wall"
   },
   {
     "id": "haz2",
-    "name": "Loose sand",
+    "name": "Ripple field (loose sand)",
     "type": "hazard",
-    "x": -250.0,
-    "y": -150.0,
-    "note": "Wheel/boot sinkage risk"
+    "x": -805.5,
+    "y": -120.9,
+    "note": "Notional: aeolian ripples on the channel floor"
   }
 ]

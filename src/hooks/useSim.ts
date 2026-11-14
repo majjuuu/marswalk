@@ -22,6 +22,11 @@ export function useSim(grid: SlopeGrid | null, route: Route | null, rover: XY, s
     return () => clearInterval(id);
   }, [playing, grid, speed]);
 
+  // Out of O2 = the scenario is over; stop the clock.
+  useEffect(() => {
+    if (rt.state.o2_min_left <= 0) setPlaying(false);
+  }, [rt.state.o2_min_left]);
+
   return {
     rt,
     playing,

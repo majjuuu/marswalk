@@ -77,7 +77,7 @@ export default function App() {
     <div className="app">
       <header>
         <h1>Marswalk</h1>
-        <span className="muted">Bright Angel / Neretva Vallis EVA (FAKE DATA)</span>
+        <span className="muted">Bright Angel / Neretva Vallis EVA (real HiRISE terrain, notional EVA)</span>
         <ModeSwitch mode={mode} onChange={switchMode} />
       </header>
       <main>

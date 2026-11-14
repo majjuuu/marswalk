@@ -5,8 +5,9 @@ Planning + live-navigation map for a 2-astronaut Mars EVA at the **Bright Angel*
 you can still walk back to the rover from, given remaining O2 and terrain slope. It shrinks
 as the EVA goes on and turns yellow, then red.
 
-> **All data is FAKE right now.** The terrain, point positions, O2 constants, and dust-devil
-> forecast are placeholders. See "What's faked" below.
+> **Terrain is real, the EVA is notional.** Slope and basemap come from the USGS HiRISE
+> Jezero mosaics; Cheyava Falls is placed from Perseverance's waypoints. The rover spot,
+> samples, hazards, O2 constants and dust-devil forecast are placeholders. See "What's real".
 
 ## Run it
 
@@ -16,7 +17,7 @@ npm run dev      # http://localhost:5173 (Vite default)
 npm test         # unit tests (Vitest)
 npm run lint
 npm run build
-npm run data:demo  # regenerate fake data (needs python3, no extra packages)
+npm run data:demo  # back to the FAKE demo data (needs python3, no extra packages)
 ```
 
 **Try it:** the app opens in **Plan** mode with a route to Cheyava Falls. Click the map to add
@@ -66,13 +67,16 @@ Full version: [docs/CONTRACT.md](docs/CONTRACT.md).
    marching squares traces the edge into a polygon.
 4. `margin = budget - cost home for the furthest astronaut`. < 20 min = warn, < 10 = turn back.
 
-## What's faked
+## What's real
 
-| Thing | Fake version | Real version |
+| Thing | Now | Source / caveat |
 |---|---|---|
-| Slope grid | sine-wave plains + a N-S "channel wall" with 2 ramps + random steep blobs (`export_slope.py --demo`, seed 42) | HiRISE DTM -> `gdaldem slope` -> 5 m |
-| Points | made-up positions (Cheyava Falls ~900 m west) | real coordinates via `make_points.py` |
-| Basemap | slope-shaded rust colour drawn in the browser | HiRISE ortho PNG (`source.ts`) |
+| Slope grid | **Real.** 580x580 @ 5 m around the rover | USGS controlled HiRISE Jezero DTM (1 m) -> Horn slope -> 5 m mean. DTM noise inflates slope; `--agg max` is the cautious option |
+| Basemap | **Real.** 2 m/px | USGS HiRISE Jezero ortho mosaic (25 cm) |
+| Cheyava Falls | **Real** (to ~tens of m) | Perseverance waypoint, sols 1210-1218 |
+| Rover spot | Notional | Perseverance's sol 1120 stop, ~1.05 km ESE |
+| Samples, hazards | Notional | hand-placed near real features |
+| Distances | ~5% too long east-west | source projection is equirectangular with lat_ts=0; at 18.5 N that stretches E-W by 1/cos(18.5) |
 | O2 / speed constants | round placeholder numbers (`config.ts`) | from EVA physiology references |
 | Dust devils | hard-coded "12:00-14:00" | forecast / climatology |
 | O2 | one shared number for the team | per-suit telemetry |

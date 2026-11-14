@@ -84,14 +84,22 @@ def demo_grid(seed=42, width=600, height=600, cell_m=5.0):
 
 
 # ---------------------------------------------------------------- real grid
-def grid_from_tif(path, rover_e, rover_n):
+def grid_from_tif(path, rover_e, rover_n, half_size_m=None):
     # Imported lazily so --demo works without these installed.
     import numpy as np
     import rasterio
 
     with rasterio.open(path) as src:
-        band = src.read(1, masked=True).astype("float64")
         t = src.transform
+        window = None
+        if half_size_m:
+            # Keep only a square around the rover (e.g. 1500 -> 3 x 3 km).
+            from rasterio.windows import from_bounds
+            window = from_bounds(rover_e - half_size_m, rover_n - half_size_m,
+                                 rover_e + half_size_m, rover_n + half_size_m, transform=t)
+            window = window.round_offsets().round_lengths()
+            t = src.window_transform(window)
+        band = src.read(1, masked=True, window=window).astype("float64")
         if abs(t.a) != abs(t.e):
             raise SystemExit(f"Non-square pixels ({t.a} x {t.e}); gdalwarp -tr 5 5 first.")
         if t.b != 0 or t.d != 0:
@@ -99,8 +107,8 @@ def grid_from_tif(path, rover_e, rover_n):
         arr = np.where(band.mask, NODATA_SLOPE_DEG, band.filled(0))
         arr = np.round(arr, 1)
         return dict(
-            width=src.width,
-            height=src.height,
+            width=band.shape[1],
+            height=band.shape[0],
             cell_m=float(t.a),
             # t.c / t.f = projected coords of the top-left (NW) corner.
             # Subtracting the rover position moves the origin onto the rover.
@@ -116,6 +124,7 @@ def main():
     p.add_argument("--tif", help="slope GeoTIFF in degrees")
     p.add_argument("--rover-e", type=float, help="rover easting (same CRS as the tif)")
     p.add_argument("--rover-n", type=float, help="rover northing (same CRS as the tif)")
+    p.add_argument("--half-size", type=float, help="crop to +/- this many meters around the rover")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--out", default="../public/data/slope.json")
     a = p.parse_args()
@@ -125,7 +134,7 @@ def main():
     elif a.tif:
         if a.rover_e is None or a.rover_n is None:
             p.error("--tif needs --rover-e and --rover-n")
-        grid = grid_from_tif(a.tif, a.rover_e, a.rover_n)
+        grid = grid_from_tif(a.tif, a.rover_e, a.rover_n, a.half_size)
     else:
         p.error("pass --demo or --tif")
 
