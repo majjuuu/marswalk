@@ -1,0 +1,70 @@
+[
+  {
+    "id": "rover",
+    "name": "Rover parking",
+    "type": "rover",
+    "x": 0.0,
+    "y": 0.0,
+    "note": "Parked on flat bedrock"
+  },
+  {
+    "id": "cheyava",
+    "name": "Cheyava Falls",
+    "type": "target",
+    "x": -900.0,
+    "y": 50.0,
+    "note": "Leopard-spot outcrop (FAKE position)"
+  },
+  {
+    "id": "s1",
+    "name": "Sample A (spot)",
+    "type": "sample",
+    "x": -880.0,
+    "y": 95.0,
+    "note": "Leopard spots visible",
+    "sample_kind": "spot"
+  },
+  {
+    "id": "s2",
+    "name": "Sample B (spot)",
+    "type": "sample",
+    "x": -930.0,
+    "y": 20.0,
+    "note": "Poppy-seed texture",
+    "sample_kind": "spot"
+  },
+  {
+    "id": "s3",
+    "name": "Sample C (no-spot)",
+    "type": "sample",
+    "x": -860.0,
+    "y": -10.0,
+    "note": "Control rock without spots",
+    "sample_kind": "no-spot"
+  },
+  {
+    "id": "blank",
+    "name": "Contamination blank",
+    "type": "sample",
+    "x": -850.0,
+    "y": 60.0,
+    "note": "Open witness tube on site",
+    "sample_kind": "blank"
+  },
+  {
+    "id": "haz1",
+    "name": "Rockfall zone",
+    "type": "hazard",
+    "x": -560.0,
+    "y": 200.0,
+    "note": "Below channel wall - do not linger"
+  },
+  {
+    "id": "haz2",
+    "name": "Loose sand",
+    "type": "hazard",
+    "x": -250.0,
+    "y": -150.0,
+    "note": "Wheel/boot sinkage risk"
+  }
+]
