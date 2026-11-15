@@ -9,7 +9,7 @@ export function RoverMiniMap(){
  const points=[[cx,cy],[cx+radius*Math.cos(alpha-wing),cy+radius*Math.sin(alpha-wing)],[cx+radius*Math.cos(alpha+wing),cy+radius*Math.sin(alpha+wing)]];
  const activate=(point:typeof locationPoints[number])=>{moveTo(...point.position);if(point.target)select(point.target);};
  return <section className="minimap-panel" aria-label="Geographic location map">
-  <div className="panel-heading"><span>BRIGHT ANGEL · HiRISE</span><span className="accent">N ↑</span></div>
+  <div className="panel-heading"><span>BRIGHT ANGEL</span><span className="accent">N ↑</span></div>
   <svg viewBox="0 0 250 250" className="minimap" aria-label="USGS orbital imagery with geographic locations and camera position">
    <image href="/terrain/bright-angel.webp" width="250" height="250"/>
    <polygon points={points.map(p=>p.join(',')).join(' ')} fill="#70dfd2" opacity=".5"/>
@@ -22,6 +22,6 @@ export function RoverMiniMap(){
   </svg>
   <div className="small-muted">{geo.latitude.toFixed(5)}° N · {geo.longitude.toFixed(5)}° E<br/>18 m above ground · heading {Math.round(heading)}°</div>
   <div className="location-list">{locationPoints.map(point=><button key={point.id} onClick={()=>activate(point)}>{point.name}</button>)}</div>
-  <div className="small-muted">Orbital map · viewpoint positions illustrative</div>
+
  </section>;
 }

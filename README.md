@@ -29,13 +29,13 @@ Build output is in `dist/`.
 - Aim the center reticle at any ground point and click to move there. The camera stays 18 m above the terrain. Scroll to zoom.
 - Aim at a named geographic marker and click to inspect it. M opens missions; E closes panels without releasing mouse look. Scroll to read the science panel.
 - The HiRISE minimap shows the camera position and coordinates. Named locations are also available as map buttons when the cursor is released.
-- Objectives complete automatically on visiting Bright Angel and opening each science inspection.
+- Objectives complete automatically on visiting Cheyava Falls, inspecting leopard spots, vivianite, greigite, and layered mudstone, and reviewing the isotope test plan after inspecting the shared leopard-spotted sample. The plan lists laboratory steps without a quiz or answer selection. No isotope ratios are fabricated and no real laboratory measurements are performed.
 - Click turquoise navigation arrows in the scene, or the buttons at the bottom, to jump between three **illustrative** Bright Angel viewpoints.
 - Watch the minimap dot and heading cone update. Tap another **connected** minimap stop to navigate.
 - Click the science hotspot at the central scene to open the Cheyava Falls mineral panel.
 - Jump to the layered outcrop stop, click its science hotspot, and read the sedimentary science panel.
 - Open science markers to complete observations automatically; press M or click **Missions** to see the checklist.
-- Switch camera / PIXL / SHERLOC information tabs. Only the camera view is rendered; other modes present contextual descriptions, not fabricated instrument measurements.
+- Open a mineral popup and switch between Summary, PIXL, and SHERLOC tabs (keys 1/2/3 while mouse-locked). PIXL explains elemental/mineral evidence; SHERLOC explains organics and spectroscopy. The Summary retains the rock photo, combined mineral summary, and test plan. No live instrument measurements are generated.
 
 ## Branch setup
 
@@ -72,7 +72,7 @@ public/terrain/                Browser-ready USGS terrain assets and provenance
 scripts/prepare-terrain.py      Reproducible remote raster crop
 src/components/RoverMiniMap     Standalone SVG image minimap, live heading cone
 src/components/SciencePanel     Mineral and mudstone content; linked NASA science
-src/components/InstrumentSelector
+src/components/InstrumentSelector Mineral popup tabs
 src/components/MissionChecklist
 src/data/stops.ts               Demo node graph, hotspots and mission objectives
 src/lib/angles.ts               Camera yaw, hotspot geometry, local bearing helpers
@@ -82,7 +82,7 @@ src/App.tsx                     Complete standalone responsive HUD UI
 
 ## Terrain source and regeneration
 
-The scene uses a 1,024 × 1,024 m crop centered at 77.30519° E, 18.49748° N, around Cheyava Falls / Bright Angel. The USGS Mars 2020 TRN HiRISE 1 m DTM is resampled into a 257 × 257 mesh; the matching 25 cm orthomosaic is resampled to a 2,048 × 2,048 WebP texture. Elevation is in meters without vertical exaggeration. No procedural mountains or fabricated rock details are added. At this mesh resolution, small rocks and sedimentary textures are not resolved.
+The scene uses a 1,024 × 1,024 m crop centered at 77.30519° E, 18.49748° N, around Cheyava Falls / Bright Angel. The USGS Mars 2020 TRN HiRISE 1 m DTM is resampled into a 513 × 513 mesh; the matching 25 cm orthomosaic is resampled to a 4,096 × 4,096 WebP texture. Elevation is in meters without vertical exaggeration. Small rocks remain below the orbital model resolution. One clickable rock uses the real Perseverance Cheyava Falls photograph (PIA26368) projected onto a simplified mesh. Its combined summary explains vivianite in the dark rims and greigite within leopard-spot interiors. The mesh shape and placement are educational; neither mineral is represented as a separate rock. Location markers have no boundary outlines.
 
 Source: [USGS Mars 2020 TRN HiRISE DTM mosaic](https://astrogeology.usgs.gov/search/map/mars_2020_terrain_relative_navigation_hirise_dtm_mosaic), DOI [10.5066/P9REJ9JN](https://doi.org/10.5066/P9REJ9JN). Exact raster URLs and crop bounds are recorded in `public/terrain/`. The crop uses the source Mars sphere (radius 3,396,190 m) and equirectangular projection. Camera offsets and hotspot bearings are illustrative; they are not calibrated rover poses. The minimap uses the same HiRISE crop and projected coordinates as the terrain. Named viewpoint positions remain illustrative.
 

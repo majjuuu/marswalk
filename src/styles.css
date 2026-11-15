@@ -6,3 +6,11 @@
 .geo-marker{display:flex;flex-direction:column;gap:3px;border-radius:8px;padding:8px 12px}.geo-marker small{font-size:9px;color:#b9d7cd}.walk-hint{position:absolute;bottom:135px;left:50%;transform:translateX(-50%);background:#101b23ce;padding:8px 14px;border-radius:16px;font-size:11px;pointer-events:none;white-space:nowrap}.app:has(.scene-reticle) .science-panel,.app:has(.scene-reticle) .mission-panel{left:50%;right:auto;transform:translateX(-50%);top:110px}.lock-hint{border:1px solid #8ae4d5;cursor:pointer}
 
 .location-list{display:flex;flex-direction:column;gap:4px;margin:8px 0}.location-list button{text-align:left;background:#142c34;color:#c9eee2;border:1px solid #54766c;border-radius:4px;padding:5px 8px;font-size:10px}
+
+.rock-label{font-size:10px;padding:5px 9px;border-color:#d9ba82;background:#2a231edb}.mineral-summary h2{font-size:21px}.mineral-formula{font-family:monospace;color:#eacb94;margin:10px 0}.isotope-exercise{border-top:1px solid #ffffff26;margin-top:14px}.primary-btn:disabled{opacity:.5;cursor:default}.analysis-choice{display:block;width:100%;text-align:left;border:1px solid #608d80;border-radius:6px;background:#17332d;color:#e0f3ec;font-size:12px;line-height:1.5;padding:10px;margin:8px 0}.science-details{font-size:11px;color:#b0cbc0;margin-top:16px}.science-details summary{cursor:pointer}.mission-panel{max-height:calc(100dvh - 150px);overflow:auto}
+
+.rock-photo{margin:12px 0}.rock-photo img{display:block;width:100%;height:auto;border-radius:7px}.rock-photo figcaption{font-size:9px;color:#a4bdb8;margin-top:5px}
+
+.test-plan-steps{padding-left:20px;font-size:13px;line-height:1.6;color:#d6e3e3}.test-plan-steps li{margin:9px 0}
+
+.mineral-tabs{display:flex;gap:5px;margin:14px 0;border-bottom:1px solid #ffffff26;padding-bottom:8px}.mineral-tabs button{flex:1;padding:9px;border:1px solid #45606a;border-radius:5px;background:transparent;color:#bdd5d5;font-size:12px}.mineral-tabs button[aria-selected="true"]{background:#6ddbc622;border-color:#6ddbc6;color:#98f6e5}.mineral-evidence{font-size:13px;line-height:1.6;color:#d6e3e3}.mineral-evidence dt{color:#e6cc9b;margin-top:12px}.mineral-evidence dd{margin:5px 0 12px}

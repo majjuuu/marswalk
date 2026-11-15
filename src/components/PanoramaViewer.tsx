@@ -26,7 +26,7 @@ function MouseLook({onLock,onUnlock,onError}:{onLock:()=>void;onUnlock:()=>void;
    if(state.selectedTargetId||state.showMission)return;
    const bounds=canvas.getBoundingClientRect();
    const x=bounds.left+bounds.width/2,y=bounds.top+bounds.height/2;
-   const target=Array.from(document.querySelectorAll<HTMLButtonElement>('.geo-marker')).find(button=>{
+   const target=Array.from(document.querySelectorAll<HTMLButtonElement>('.geo-marker, .rock-label')).find(button=>{
     const rect=button.getBoundingClientRect();
     return rect.width>0&&x>=rect.left&&x<=rect.right&&y>=rect.top&&y<=rect.bottom;
    });
@@ -35,8 +35,10 @@ function MouseLook({onLock,onUnlock,onError}:{onLock:()=>void;onUnlock:()=>void;
    if(!terrain)return;
    camera.updateMatrixWorld();terrain.updateMatrixWorld();
    raycaster.setFromCamera(new THREE.Vector2(0,0),camera);
-   const hit=raycaster.intersectObject(terrain,false)[0];
-   if(hit)state.moveTo(hit.point.x,hit.point.z);
+   const hits=raycaster.intersectObjects(scene.children,true).filter(hit=>hit.object===terrain||hit.object.userData.scienceTarget);
+   const hit=hits[0];
+   if(hit?.object.userData.scienceTarget)state.selectTarget(hit.object.userData.scienceTarget);
+   else if(hit)state.moveTo(hit.point.x,hit.point.z);
   };
   const wheel=(e:WheelEvent)=>{
    e.preventDefault();
@@ -50,6 +52,7 @@ function MouseLook({onLock,onUnlock,onError}:{onLock:()=>void;onUnlock:()=>void;
    const state=useHUD.getState();
    if(e.code==='KeyE'){state.selectTarget(null);if(state.showMission)state.toggleMission();}
    if(e.code==='KeyM')state.toggleMission();
+   if(state.selectedTargetId&&/^Digit[123]$/.test(e.code))document.querySelector<HTMLButtonElement>(`[data-science-tab="${e.code.slice(-1)}"]`)?.click();
   };
   // Reuse a preceding user gesture when navigation into this scene provides one.
   if(navigator.userActivation?.isActive)requestLock();
@@ -80,7 +83,7 @@ export function PanoramaViewer(){
  // Stable callbacks keep the controls connected when the HUD changes.
  const callbacks=useRef({lock:()=>{setLocked(true);setError(false);},unlock:()=>setLocked(false),error:()=>setError(true)}).current;
  return <div className="panorama-shell" aria-label="Interactive Bright Angel terrain reconstruction">
-  <Canvas camera={{position:[0,18,0],fov:72,near:0.1,far:2000}} gl={{antialias:true}}>
+  <Canvas shadows dpr={[1,2]} camera={{position:[0,18,0],fov:72,near:0.1,far:2000}} gl={{antialias:true}}>
    <color attach="background" args={['#b99a7e']}/>
    <Suspense fallback={<Html center><div className="terrain-loading">Loading Bright Angel terrain…</div></Html>}><BrightAngelTerrain/></Suspense>
    <MouseLook onLock={callbacks.lock} onUnlock={callbacks.unlock} onError={callbacks.error}/>
@@ -90,6 +93,6 @@ export function PanoramaViewer(){
    const canvas=document.querySelector<HTMLCanvasElement>('.panorama-shell canvas');
    if(canvas)try{Promise.resolve(canvas.requestPointerLock()).catch(()=>setError(true));}catch{setError(true);}
   }}>{error?'Click to retry mouse look':'Enter terrain · click to begin mouse look'}</button>}
-  <div className="scene-disclaimer">USGS HiRISE TERRAIN · ILLUSTRATIVE VIEWPOINTS</div>
+
  </div>;
 }

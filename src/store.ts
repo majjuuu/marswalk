@@ -16,7 +16,7 @@ export const useHUD = create<State>((set)=>({
   set(s=>({position:[x,z],currentStopId:nearest,completed:{...s.completed,...(Math.hypot(x,z)<30?{visit:true}:{})}}));
  },
  setHeading:(headingDeg)=>set({headingDeg}),setInstrument:(instrument)=>set({instrument}),
- selectTarget:(selectedTargetId)=>{const target=targets.find(t=>t.id===selectedTargetId);set(s=>({selectedTargetId:target?.id??null,completed:{...s.completed,...(target?{[target.kind==='mineral'?'mineral':'layers']:true}:{})}}));},
+ selectTarget:(selectedTargetId)=>{const target=targets.find(t=>t.id===selectedTargetId);set(s=>({selectedTargetId:target?.id??null,instrument:'camera',completed:{...s.completed,...(target?.id==='leopard'?{spots:true,minerals:true}:target?.id==='cheyava'?{minerals:true}:target?.id==='layers'?{layers:true}:{})}}));},
  complete:(id)=>set(s=>({completed:{...s.completed,[id]:true}})),
  toggleMission:()=>set(s=>({showMission:!s.showMission}))
 }));

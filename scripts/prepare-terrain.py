@@ -24,7 +24,7 @@ with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN='EMPTY_DIR', GDAL_HTTP_MULTIRANGE
    print(kind, src.bounds, flush=True)
    if not (src.bounds.left <= bounds[0] < bounds[2] <= src.bounds.right and src.bounds.bottom <= bounds[1] < bounds[3] <= src.bounds.top):
     raise ValueError('Bright Angel crop outside dataset coverage')
-   n = 257 if kind == 'dtm' else 2048
+   n = 513 if kind == 'dtm' else 4096
    data = src.read(1,window=from_bounds(*bounds,transform=src.transform),out_shape=(n,n),masked=True,resampling=Resampling.bilinear)
    if np.ma.getmaskarray(data).any(): raise ValueError('Crop has missing data; do not fabricate terrain')
    print(kind, float(data.min()),float(data.max()), flush=True)
