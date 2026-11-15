@@ -17,8 +17,8 @@ export function ImagePanel({
   return (
     <section className="panel image-panel">
       <div className="row">
-        <h3>{point.name}</h3>
-        <button className="close" onClick={onClose} aria-label="Close">x</button>
+        <h2>{point.name}</h2>
+        <button className="close" onClick={onClose} aria-label="Close">×</button>
       </div>
       {point.note && <p className="muted">{point.note}</p>}
       {point.type === 'sample' && (

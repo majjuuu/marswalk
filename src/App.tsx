@@ -16,11 +16,20 @@ const View3D = lazy(() => import('./three/View3D'));
 
 const ROVER: XY = { x: 0, y: 0 }; // by contract the rover is the origin
 
+/** Sidebar sections below the always-visible status card. */
+const SIDE_TABS = [
+  { id: 'mission', label: 'Mission' },
+  { id: 'samples', label: 'Samples' },
+  { id: 'layers', label: 'Layers' },
+] as const;
+type SideTab = (typeof SIDE_TABS)[number]['id'];
+
 export default function App() {
   const [grid, setGrid] = useState<SlopeGrid | null>(null);
   const [points, setPoints] = useState<MapPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>('plan');
+  const [tab, setTab] = useState<SideTab>('mission');
   const [waypoints, setWaypoints] = useState<XY[]>([]);
   const [layers, setLayers] = useState<LayerVisibility>({ basemap: true, slope: true, boundary: true, route: true, points: true });
   const [collected, setCollected] = useState<Record<string, boolean>>({});
@@ -151,8 +160,13 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1>Marswalk</h1>
-        <span className="muted">Bright Angel / Neretva Vallis EVA (real HiRISE terrain, notional EVA)</span>
+        <div className="brand">
+          <span className="brand-mark" aria-hidden />
+          <div>
+            <h1>Marswalk</h1>
+            <span className="brand-sub">Bright Angel · Neretva Vallis · Jezero Crater</span>
+          </div>
+        </div>
         <div className="header-right">
           <div className="segmented" title={elevation ? '' : 'No elevation.json: 3D view unavailable'}>
             <button className={view === '2d' ? 'active' : ''} onClick={() => { setView('2d'); setHover(null); }}>2D map</button>
@@ -203,6 +217,7 @@ export default function App() {
         </div>
         <aside>
           {selected && <ImagePanel point={selected} images={images} science={science} onClose={() => setSelected(null)} />}
+          <Readout state={sim.rt.state} safe={safe} />
           {mode === 'plan' ? (
             <PlanControls
               waypointCount={waypoints.length}
@@ -220,18 +235,26 @@ export default function App() {
               onSpeed={setSpeed}
             />
           )}
-          <Readout state={sim.rt.state} safe={safe} />
-          <MissionPanel flags={mission} />
-          <SampleChecklist points={points} collected={collected} onToggle={(id) => setCollected((c) => ({ ...c, [id]: !c[id] }))} />
-          <DustDevilPanel clock={sim.rt.state.clock_local} />
-          <LayerPanel
+          <nav className="tabs" role="tablist">
+            {SIDE_TABS.map((t) => (
+              <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'active' : ''} onClick={() => setTab(t.id)}>
+                {t.label}
+              </button>
+            ))}
+          </nav>
+          {tab === 'mission' && <MissionPanel flags={mission} />}
+          {tab === 'mission' && <DustDevilPanel clock={sim.rt.state.clock_local} />}
+          {tab === 'samples' && (
+            <SampleChecklist points={points} collected={collected} onToggle={(id) => setCollected((c) => ({ ...c, [id]: !c[id] }))} />
+          )}
+          {tab === 'layers' && <LayerPanel
             layers={layers}
             onChange={setLayers}
             resolution={{ slope: `${grid.cell_m} m/cell`, basemap: base?.resolution, boundary: `${grid.cell_m} m/cell` }}
             baseLayers={baseLayers}
             baseId={baseId}
             onBaseChange={setBaseId}
-          />
+          />}
         </aside>
       </main>
     </div>

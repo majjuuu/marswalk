@@ -35,7 +35,8 @@ const ll = (x: number, y: number): [number, number] => [y, x];
 const STATUS_COLOR = { ok: MAP_COLORS.ok, warn: MAP_COLORS.warn, turnback: MAP_COLORS.turnback } as const;
 const POINT_COLOR = MAP_COLORS.point;
 
-const roverIcon = L.divIcon({ className: 'rover-icon', html: '🚙', iconSize: [24, 24] });
+// Rover (the crew's home base): a glowing ring with a pulse, drawn in CSS.
+const roverIcon = L.divIcon({ className: 'rover-icon', html: '<span class="pulse"></span><span class="core"></span>', iconSize: [22, 22] });
 
 function ClickHandler({ onClick, onHover }: { onClick?: (p: XY) => void; onHover?: (p: XY | null) => void }) {
   useMapEvents({

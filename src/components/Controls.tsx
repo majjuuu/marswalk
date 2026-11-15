@@ -22,7 +22,7 @@ export function PlanControls(props: {
     <section className="panel">
       <h3>Plan</h3>
       <p className="muted">Click the map to add waypoints. The boundary shows the safe zone at arrival.</p>
-      <p>{props.summary}</p>
+      <p className="summary">{props.summary}</p>
       <div className="row">
         <button onClick={props.onUndo} disabled={!props.waypointCount}>Undo</button>
         <button onClick={props.onClear} disabled={!props.waypointCount}>Clear</button>
@@ -44,13 +44,14 @@ export function NavControls(props: {
   return (
     <section className="panel">
       <h3>Navigate</h3>
+      <p className="muted">Play the EVA: the crew walks the route and the boundary shrinks as O₂ burns.</p>
       <div className="row">
         <button className="primary" onClick={props.onPlayPause}>{props.playing ? 'Pause' : 'Play'}</button>
         <button onClick={props.onReset}>Reset</button>
         <button onClick={props.onReturn}>Return to rover</button>
       </div>
       <label className="row">
-        <span>Speed</span>
+        <span className="muted">Sim speed</span>
         <select value={props.speed} onChange={(e) => props.onSpeed(Number(e.target.value))}>
           {SPEEDS.map((s) => <option key={s} value={s}>{s} sim-min / s</option>)}
         </select>
