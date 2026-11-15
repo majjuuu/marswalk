@@ -29,6 +29,9 @@ the boundary shrinks and changes colour, and banners fire.
   In Plan mode, clicking the ground adds a waypoint; clicking a target/sample label opens its images.
 - **Close-up detail:** around the rover, target and samples (2 x 1.5 km) the 3D view streams
   1 m terrain and 25 cm HiRISE imagery tiles, nearest EV1 first. Elsewhere it's 5 m / 2 m.
+- **Explore:** walk anywhere on foot at 1.7 m: click the ground or the minimap to go there,
+  drag to look around; hover shows the O2 cost to walk home from any spot.
+- **Minimap:** top right in 3D, with your position, a heading cone, the rover and the boundary.
 - **EV1 eye view:** first-person at 1.7 m, true scale, facing along the route. It follows EV1
   while the sim runs. Drag to look around. A compass at the bottom shows the direction and
   distance to the rover.
@@ -100,6 +103,11 @@ Full version: [docs/CONTRACT.md](docs/CONTRACT.md).
 | O2 | one shared number for the team | per-suit telemetry |
 
 ## Credits
+
+- From **gloriachang's `hud` branch**: free-roam first-person exploring, the minimap with a
+  heading cone, mission objectives that tick themselves off, and the Cheyava Falls mineral
+  write-up (re-checked against NASA PIA26640 and Hurowitz et al. 2025, Nature). Ported onto
+  Marswalk's real grid; her illustrative viewpoints and placeholder diagrams were not used.
 
 - The natural-colour, mineral and thermal layers, and the hover lat/lon readout, are ported
   from **Mughani05's [marswalk3d](https://github.com/Mughani05/marswalk3d)** (layer sources,

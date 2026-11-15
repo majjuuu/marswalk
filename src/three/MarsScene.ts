@@ -19,14 +19,23 @@ import { dotCanvas, loadImage } from './textures';
  * The minus on y keeps north "into the screen" with a right-handed system.
  */
 
-export type CameraMode = 'overview' | 'eye';
+/**
+ * overview = orbit from above · eye = ride along as EV1 (follows the sim)
+ * explore = walk anywhere on foot at eye height (click the ground to go there;
+ *           idea from gloriachang's HUD branch)
+ */
+export type CameraMode = 'overview' | 'eye' | 'explore';
+/** Walking speed when exploring: faster than a real EVA so the demo stays snappy. */
+const EXPLORE_SPEED_M_S = 30;
 export const EYE_HEIGHT_M = 1.7;
 
 export interface SceneCallbacks {
   onTerrainClick?: (p: XY) => void;
   onLabelClick?: (id: string) => void;
-  /** Pointer over the terrain (overview mode), or null when it leaves. */
+  /** Pointer over the terrain, or null when it leaves. */
   onHover?: (p: XY | null) => void;
+  /** First-person position + compass bearing (deg clockwise from north), for the minimap. */
+  onViewer?: (v: { pos: XY; bearingDeg: number }) => void;
 }
 
 export class MarsScene {
@@ -48,6 +57,10 @@ export class MarsScene {
   private exag = 1.5;
   private mode: CameraMode = 'overview';
   private eye = { pos: { x: 0, y: 0 } as XY, ahead: { x: 0, y: 1 } as XY, yaw: 0, pitch: -0.08 };
+  /** Explore mode: where you stand, which way you face (radians, 0 = east), where you're walking to. */
+  private walk = { pos: { x: 0, y: 0 } as XY, heading: Math.PI / 2, to: null as XY | null };
+  private lastViewer = { x: NaN, y: NaN, b: NaN };
+  private lastFrame = performance.now();
   private resizeObs: ResizeObserver;
   /** Eye-view compass: arrow + distance to the rover, which is usually behind you. */
   private hud = document.createElement('div');
@@ -103,6 +116,7 @@ export class MarsScene {
       }
       else this.placeEyeCamera();
       this.pickHover();
+      this.reportViewer();
       this.renderer.render(this.scene, this.camera);
       this.labels.render(this.scene, this.camera);
     };
@@ -116,7 +130,7 @@ export class MarsScene {
    * a line 2 m up is above your 1.7 m eyes and slices through the view.
    */
   private lift(overview: number) {
-    return this.mode === 'eye' ? 0.15 : overview;
+    return this.mode === 'overview' ? overview : 0.15;
   }
 
   /** Local map point -> 3D position, lifted `lift` metres above the ground. */
@@ -365,7 +379,7 @@ export class MarsScene {
     this.marker(this.live, { x: 0, y: 0 }, '#ffffff', dist > 20 ? `Rover · ${Math.round(dist)} m` : 'Rover', null, 2);
 
     astronauts.forEach((a, i) => {
-      if (this.mode === 'eye' && i === 0) return; // you are EV1
+      if (this.mode === 'eye' && i === 0) return; // you are EV1 (in explore you're a free observer)
       this.marker(this.live, a, i ? '#ffb347' : '#4fd1ff', `EV${i + 1}`, null, 1);
     });
   }
@@ -374,15 +388,20 @@ export class MarsScene {
   setCameraMode(mode: CameraMode) {
     if (mode === this.mode) return;
     this.mode = mode;
-    this.controls.enabled = mode === 'overview';
-    this.camera.near = mode === 'eye' ? 0.3 : 1;
+    const ground = mode !== 'overview';
+    this.controls.enabled = !ground;
+    this.camera.near = ground ? 0.3 : 1;
     this.camera.updateProjectionMatrix();
-    this.scene.fog = mode === 'eye' ? new THREE.Fog('#c9a07a', 400, 4000) : null; // dusty horizon
-    this.scene.background = new THREE.Color(mode === 'eye' ? '#c9a07a' : '#1a1210');
+    this.scene.fog = ground ? new THREE.Fog('#c9a07a', 400, 4000) : null; // dusty horizon
+    this.scene.background = new THREE.Color(ground ? '#c9a07a' : '#1a1210');
+    if (mode === 'explore') {
+      // Start exploring from wherever EV1 is, facing the way EV1 was facing.
+      this.walk = { pos: { ...this.eye.pos }, heading: this.eyeHeading(), to: null };
+    }
     this.eye.yaw = 0;
     this.eye.pitch = -0.08;
     if (mode === 'overview') this.resetOverview();
-    this.hud.style.display = mode === 'eye' ? '' : 'none';
+    this.hud.style.display = ground ? '' : 'none';
     this.drawFixed();
     this.drawLive();
   }
@@ -390,6 +409,14 @@ export class MarsScene {
   /** Where EV1 is looking: a point a little further along the route. */
   setEyeAhead(ahead: XY) {
     this.eye.ahead = ahead;
+  }
+
+  /** Explore mode: jump to a spot (e.g. clicked on the minimap). */
+  walkTo(p: XY) {
+    if (this.mode !== 'explore') return;
+    this.walk.heading = Math.atan2(p.y - this.walk.pos.y, p.x - this.walk.pos.x);
+    this.eye.yaw = 0;
+    this.walk.to = p;
   }
 
   resetOverview() {
@@ -405,10 +432,62 @@ export class MarsScene {
     this.controls.update();
   }
 
-  private placeEyeCamera() {
+  private eyeHeading() {
     const { pos, ahead } = this.eye;
+    return Math.atan2(ahead.y - pos.y, ahead.x - pos.x) + this.eye.yaw;
+  }
+
+  /** Explore mode: glide toward the clicked spot, staying on the ground. */
+  private stepWalk() {
+    const now = performance.now();
+    // Real elapsed time (capped at 0.5 s), so walking speed doesn't depend on frame rate.
+    const dt = Math.min(0.5, (now - this.lastFrame) / 1000);
+    this.lastFrame = now;
+    const { pos, to } = this.walk;
+    if (!to) return;
+    const dx = to.x - pos.x;
+    const dy = to.y - pos.y;
+    const d = Math.hypot(dx, dy);
+    const step = EXPLORE_SPEED_M_S * dt;
+    if (d <= step) {
+      this.walk.pos = { ...to };
+      this.walk.to = null;
+    } else {
+      this.walk.pos = { x: pos.x + (dx / d) * step, y: pos.y + (dy / d) * step };
+    }
+  }
+
+  /** Where the first-person camera is and which way it faces (eye and explore modes). */
+  private viewer(): { pos: XY; heading: number } {
+    if (this.mode === 'explore') return { pos: this.walk.pos, heading: this.walk.heading + this.eye.yaw };
+    return { pos: this.eye.pos, heading: this.eyeHeading() };
+  }
+
+  /** Tell the page where the viewer is (minimap), only when it really changed. */
+  private reportViewer() {
+    if (!this.cb.onViewer) return;
+    let pos: XY;
+    let heading: number;
+    if (this.mode === 'overview') {
+      // Overview: the orbit point on the ground, and the camera's compass direction.
+      pos = { x: this.controls.target.x, y: -this.controls.target.z };
+      const d = new THREE.Vector3();
+      this.camera.getWorldDirection(d);
+      heading = Math.atan2(-d.z, d.x);
+    } else {
+      ({ pos, heading } = this.viewer());
+    }
+    const bearing = (((90 - (heading * 180) / Math.PI) % 360) + 360) % 360; // math angle -> compass
+    const l = this.lastViewer;
+    if (Math.hypot(pos.x - l.x, pos.y - l.y) < 0.5 && Math.abs(bearing - l.b) < 1) return;
+    this.lastViewer = { x: pos.x, y: pos.y, b: bearing };
+    this.cb.onViewer({ pos, bearingDeg: bearing });
+  }
+
+  private placeEyeCamera() {
+    if (this.mode === 'explore') this.stepWalk();
+    const { pos, heading } = this.viewer();
     const eye = this.world(pos, EYE_HEIGHT_M);
-    const heading = Math.atan2(ahead.y - pos.y, ahead.x - pos.x) + this.eye.yaw;
     const dir = new THREE.Vector3(Math.cos(heading), Math.tan(this.eye.pitch), -Math.sin(heading));
     this.camera.position.copy(eye);
     this.camera.lookAt(eye.clone().add(dir));
@@ -447,19 +526,26 @@ export class MarsScene {
     el.addEventListener('pointerleave', () => this.cb.onHover?.(null));
     el.addEventListener('pointerdown', (e) => (down = { x: e.clientX, y: e.clientY }));
     el.addEventListener('pointermove', (e) => {
-      if (!down && this.mode === 'overview') this.hoverAt = { x: e.clientX, y: e.clientY };
-      // Eye view: drag to look around.
-      if (!down || this.mode !== 'eye') return;
+      if (!down && this.mode !== 'eye') this.hoverAt = { x: e.clientX, y: e.clientY };
+      // Eye and explore views: drag to look around.
+      if (!down || this.mode === 'overview') return;
       this.eye.yaw -= (e.movementX || 0) * 0.004;
       this.eye.pitch = Math.max(-1.2, Math.min(0.8, this.eye.pitch - (e.movementY || 0) * 0.004));
     });
     el.addEventListener('pointerup', (e) => {
       const wasClick = down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 5;
       down = null;
-      if (!wasClick || this.mode !== 'overview' || !this.cb.onTerrainClick) return;
-      // Click (not drag) on the terrain -> local map coordinates.
+      if (!wasClick) return;
       const hit = this.terrainHit(e.clientX, e.clientY);
-      if (hit) this.cb.onTerrainClick(hit);
+      if (!hit) return;
+      if (this.mode === 'explore') {
+        // Click the ground to walk there; turn to face where you're going.
+        this.walk.heading = Math.atan2(hit.y - this.walk.pos.y, hit.x - this.walk.pos.x);
+        this.eye.yaw = 0;
+        this.walk.to = hit;
+      } else if (this.mode === 'overview') {
+        this.cb.onTerrainClick?.(hit); // Plan mode adds a waypoint
+      }
     });
   }
 

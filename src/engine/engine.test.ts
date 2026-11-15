@@ -7,6 +7,7 @@ import { cellIndexAt, elevationAt } from './grid';
 import { buildRoute } from './route';
 import { canReturn, statusForMargin } from './safeReturn';
 import { initialRuntime, stepSim } from './sim';
+import { NO_PROGRESS, updateMission, type MissionInput } from './objectives';
 
 /** Small test grid centred on (0,0). fill(r, c) gives the slope of each cell. */
 function makeGrid(n: number, fill: (r: number, c: number) => number, cell_m = 5): SlopeGrid {
@@ -142,5 +143,29 @@ describe('elevationAt', () => {
   });
   it('clamps outside the grid instead of returning NaN', () => {
     expect(Number.isFinite(elevationAt(g, { x: 999, y: 999 }))).toBe(true);
+  });
+});
+
+describe('mission objectives', () => {
+  const base: MissionInput = {
+    navigating: true, lead: { x: 0, y: 0 }, target: { x: -900, y: 500 },
+    o2_min_left: 200, scienceOpened: false, samplesCollected: 0, samplesTotal: 4,
+  };
+  it('reaching the target needs the lead astronaut within 30 m while navigating', () => {
+    expect(updateMission(NO_PROGRESS, { ...base, lead: { x: -880, y: 500 } }).reachedTarget).toBe(true);
+    expect(updateMission(NO_PROGRESS, { ...base, lead: { x: -800, y: 500 } }).reachedTarget).toBe(false);
+    expect(updateMission(NO_PROGRESS, { ...base, navigating: false, lead: { x: -900, y: 500 } }).reachedTarget).toBe(false);
+  });
+  it('returning home only counts after the target, and only above the reserve', () => {
+    expect(updateMission(NO_PROGRESS, base).returnedSafely).toBe(false); // at rover, never left
+    const visited = { ...NO_PROGRESS, reachedTarget: true };
+    expect(updateMission(visited, base).returnedSafely).toBe(true);
+    expect(updateMission(visited, { ...base, o2_min_left: RESERVE_MIN - 1 }).returnedSafely).toBe(false);
+  });
+  it('samples complete only when all are collected; flags never turn back off', () => {
+    expect(updateMission(NO_PROGRESS, { ...base, samplesCollected: 3 }).collectedSamples).toBe(false);
+    const done = updateMission(NO_PROGRESS, { ...base, samplesCollected: 4, scienceOpened: true });
+    expect(done.collectedSamples && done.reviewedScience).toBe(true);
+    expect(updateMission(done, { ...base, samplesCollected: 0 }).collectedSamples).toBe(true);
   });
 });

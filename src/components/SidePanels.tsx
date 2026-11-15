@@ -1,4 +1,4 @@
-import { DUST_DEVIL_WINDOW, RESERVE_MIN, START_O2_MIN } from '../engine';
+import { DUST_DEVIL_WINDOW, OBJECTIVES, RESERVE_MIN, START_O2_MIN, type MissionFlags } from '../engine';
 import type { MapPoint, SafeReturn, SimState } from '../types';
 
 export function Readout({ state, safe }: { state: SimState; safe: SafeReturn | null }) {
@@ -50,6 +50,22 @@ export function DustDevilPanel({ clock }: { clock: string }) {
       <h3>Dust devils</h3>
       <p>{DUST_DEVIL_WINDOW.label}</p>
       <small className="muted">{active ? 'ACTIVE NOW' : 'Hard-coded forecast (placeholder)'}</small>
+    </section>
+  );
+}
+
+export function MissionPanel({ flags }: { flags: MissionFlags }) {
+  const done = OBJECTIVES.filter((o) => flags[o.key]).length;
+  return (
+    <section className="panel">
+      <h3>Mission {done}/{OBJECTIVES.length}</h3>
+      {OBJECTIVES.map((o) => (
+        <div key={o.key} className={`row objective ${flags[o.key] ? 'done' : ''}`}>
+          <span className="tick">{flags[o.key] ? '✓' : '○'}</span>
+          <span>{o.label}</span>
+        </div>
+      ))}
+      <small className="muted">Ticks itself off as the crew does each step.</small>
     </section>
   );
 }

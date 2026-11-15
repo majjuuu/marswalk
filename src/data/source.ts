@@ -1,4 +1,4 @@
-import type { DetailIndex, ElevationGrid, MapLayer, MapPoint, SiteImage, SlopeGrid } from '../types';
+import type { DetailIndex, ElevationGrid, MapLayer, MapPoint, ScienceNote, SiteImage, SlopeGrid } from '../types';
 
 /**
  * Everything the app knows about the outside world comes through this interface.
@@ -9,6 +9,7 @@ export interface DataSource {
   loadPoints(): Promise<MapPoint[]>;
   loadSlope(): Promise<SlopeGrid>;
   loadImages(): Promise<SiteImage[]>;
+  loadScience(): Promise<ScienceNote[]>;
   /** Only needed by the 3D view. */
   loadElevation(): Promise<ElevationGrid>;
   /** Base map choices. Falls back to just `basemap` if layers.json is missing. */
@@ -34,6 +35,7 @@ export const staticJsonSource: DataSource = {
   loadPoints: () => getJson<MapPoint[]>('/data/points.json'),
   loadSlope: () => getJson<SlopeGrid>('/data/slope.json'),
   loadImages: () => getJson<SiteImage[]>('/data/images.json'),
+  loadScience: () => getJson<ScienceNote[]>('/data/science.json'),
   loadElevation: () => getJson<ElevationGrid>('/data/elevation.json'),
   loadLayers: () => getJson<MapLayer[]>('/data/layers.json'),
   loadDetailIndex: () => getJson<DetailIndex>('/data/detail/tiles.json'),

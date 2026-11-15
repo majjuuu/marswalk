@@ -1,0 +1,19 @@
+[
+  {
+    "id": "leopard-spots",
+    "point_ids": ["cheyava", "s1", "s2", "s3", "blank"],
+    "title": "What the leopard spots are",
+    "paragraphs": [
+      "Cheyava Falls is an arrowhead-shaped rock in the Bright Angel formation, mudstones and conglomerates at the edge of Neretva Vallis. Its 'leopard spots' are millimetre-size pale patches with dark rims; tiny dark specks around them are called 'poppy seeds'.",
+      "PIXL mapped vivianite (a hydrated iron phosphate) in the poppy seeds and the dark rims, and greigite (an iron sulfide) inside the spots. The spots are reaction fronts, where chemistry changed the rock.",
+      "These minerals look like products of redox (electron-transfer) reactions between the mud and organic matter. Microbes on Earth can use such reactions for energy, so NASA calls this a potential biosignature.",
+      "It is not proof of life: the same minerals can also form without biology. Settling it needs lab study on Earth of the Sapphire Canyon core, drilled from this rock on 21 July 2024."
+    ],
+    "eva_note": "For this EVA (our plan, not NASA's): 'spot' samples should include rims and poppy seeds; the 'no-spot' sample is a control from unspotted rock; the contamination blank records what the crew and tools bring in.",
+    "sources": [
+      { "label": "NASA PIA26640: PIXL finds vivianite, greigite in Cheyava Falls sample (Sep 2025)", "url": "https://science.nasa.gov/photojournal/perseverances-pixl-finds-vivianite-greigite-in-cheyava-falls-sample/" },
+      { "label": "Hurowitz et al. 2025, Redox-driven mineral and organic associations in Jezero Crater, Mars (Nature)", "url": "https://doi.org/10.1038/s41586-025-09413-0" },
+      { "label": "NASA PIA26368: Perseverance finds a rock with leopard spots (Jul 2024)", "url": "https://www.jpl.nasa.gov/images/pia26368-perseverance-finds-a-rock-with-leopard-spots/" }
+    ]
+  }
+]

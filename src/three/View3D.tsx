@@ -4,6 +4,7 @@ import type { LayerVisibility } from '../components/MapView';
 import { MAP_COLORS } from '../theme';
 import type { DetailIndex, ElevationGrid, MapPoint, SafeReturn, SlopeGrid, XY, XYPair } from '../types';
 import { MarsScene, type CameraMode } from './MarsScene';
+import { MiniMap } from './MiniMap';
 import { composeTerrainTexture } from './textures';
 
 interface Props {
@@ -33,6 +34,7 @@ export default function View3D(p: Props) {
   const scene = useRef<MarsScene | null>(null);
   const [camera, setCamera] = useState<CameraMode>('overview');
   const [exag, setExag] = useState(1.5);
+  const [viewer, setViewer] = useState<{ pos: XY; bearingDeg: number } | null>(null);
 
   // Callbacks change every render; keep the latest in a ref so the scene
   // (created once) always calls the current one.
@@ -43,6 +45,7 @@ export default function View3D(p: Props) {
     const s = new MarsScene(box.current!, p.elevation, {
       onTerrainClick: (pt) => cbs.current.onTerrainClick?.(pt),
       onHover: (pt) => cbs.current.onHover?.(pt),
+      onViewer: setViewer,
       onLabelClick: (id) => {
         const pt = cbs.current.points.find((x) => x.id === id);
         if (pt) cbs.current.onPointClick?.(pt);
@@ -69,7 +72,7 @@ export default function View3D(p: Props) {
   }, [baseUrl, slopeUrl, p.layers.basemap, p.layers.slope, p.tintMars, p.elevation]);
 
   // In eye view, real 1x heights: exaggeration would make every slope look like a cliff.
-  useEffect(() => scene.current?.setExaggeration(camera === 'eye' ? 1 : exag), [exag, camera, p.elevation]);
+  useEffect(() => scene.current?.setExaggeration(camera === 'overview' ? exag : 1), [exag, camera, p.elevation]);
   useEffect(() => scene.current?.setCameraMode(camera), [camera, p.elevation]);
   useEffect(() => scene.current?.setRoute(p.layers.route ? p.route : []), [p.route, p.layers.route, p.elevation]);
   useEffect(() => scene.current?.setPoints(p.layers.points ? p.points : []), [p.points, p.layers.points, p.elevation]);
@@ -95,6 +98,7 @@ export default function View3D(p: Props) {
         <div className="segmented">
           <button className={camera === 'overview' ? 'active' : ''} onClick={() => setCamera('overview')}>Overview</button>
           <button className={camera === 'eye' ? 'active' : ''} onClick={() => setCamera('eye')}>EV1 eye view</button>
+          <button className={camera === 'explore' ? 'active' : ''} onClick={() => setCamera('explore')}>Explore</button>
         </div>
         {camera === 'overview' ? (
           <>
@@ -106,9 +110,22 @@ export default function View3D(p: Props) {
             <small className="muted">Drag to orbit, scroll to zoom. Plan mode: click the ground to add a waypoint.</small>
           </>
         ) : (
-          <small className="muted">1.7 m eye height, true scale. Drag to look around. Faces along the route.</small>
+          <small className="muted">
+            {camera === 'eye'
+              ? '1.7 m eye height, true scale. Drag to look around. Faces along the route.'
+              : 'On foot at 1.7 m. Click the ground (or the minimap) to walk there; drag to look around. Hover shows the O2 cost home.'}
+          </small>
         )}
       </div>
+      <MiniMap
+        grid={p.slope}
+        baseUrl={baseUrl}
+        viewer={viewer}
+        points={p.points}
+        astronauts={p.astronauts}
+        safe={p.safe}
+        onPick={camera === 'explore' ? (pt) => scene.current?.walkTo(pt) : undefined}
+      />
     </div>
   );
 }

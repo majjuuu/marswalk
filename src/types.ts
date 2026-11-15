@@ -73,6 +73,17 @@ export interface DetailIndex {
   tiles: { id: string; x0: number; y0: number; dem: string; tex: string }[]; // x0,y0 = north-west vertex
 }
 
+// ---- public/data/science.json (optional) ---------------------------------
+/** Short, sourced science notes shown with a target's images. */
+export interface ScienceNote {
+  id: string;
+  point_ids: string[];
+  title: string;
+  paragraphs: string[];
+  eva_note?: string; // our own planning advice, kept apart from the published science
+  sources: { label: string; url: string }[];
+}
+
 // ---- public/data/slope.json ---------------------------------------------
 export interface SlopeGrid {
   width: number; // columns

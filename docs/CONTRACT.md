@@ -61,6 +61,12 @@ Missing file = just the HiRISE basemap.
   relative to the rover's ground (same zero as `elevation.json`).
 - `tex`: JPEG over exactly the vertex span (25 cm/px).
 
+## `public/data/science.json` (optional)
+
+`[{ id, point_ids[], title, paragraphs[], eva_note?, sources: [{label, url}] }]`: short sourced
+science notes shown with a target's images. `eva_note` is our own planning advice, shown apart
+from the published science.
+
 ## `public/data/images.json` (optional)
 
 `[{ id, point_ids[], src, title, role: "context"|"closeup", camera, sol, date, credit, caption, source_url }]`

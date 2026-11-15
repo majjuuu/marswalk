@@ -5,11 +5,11 @@ import { LayerPanel } from './components/LayerPanel';
 import { MapView, type LayerVisibility } from './components/MapView';
 import { HoverReadout } from './components/HoverReadout';
 import { ImagePanel } from './components/ImagePanel';
-import { DustDevilPanel, Readout, SampleChecklist } from './components/SidePanels';
+import { DustDevilPanel, MissionPanel, Readout, SampleChecklist } from './components/SidePanels';
 import { staticJsonSource as source } from './data/source';
-import { buildRoute, canReturn, estimateRoute, getWarnings, initialRuntime, pointAlong, type Route } from './engine';
+import { NO_PROGRESS, sameFlags, updateMission, buildRoute, canReturn, estimateRoute, getWarnings, initialRuntime, pointAlong, type Route } from './engine';
 import { useSim } from './hooks/useSim';
-import type { DetailIndex, ElevationGrid, MapLayer, MapPoint, SimState, SiteImage, SlopeGrid, XY } from './types';
+import type { DetailIndex, ElevationGrid, MapLayer, MapPoint, ScienceNote, SimState, SiteImage, SlopeGrid, XY } from './types';
 
 // three.js is big: only download it when someone opens the 3D view.
 const View3D = lazy(() => import('./three/View3D'));
@@ -32,6 +32,9 @@ export default function App() {
   const [view, setView] = useState<'2d' | '3d'>('2d');
   const [hover, setHover] = useState<XY | null>(null);
   const [detailIndex, setDetailIndex] = useState<DetailIndex | null>(null);
+  const [mission, setMission] = useState(NO_PROGRESS);
+  const [scienceOpened, setScienceOpened] = useState(false);
+  const [science, setScience] = useState<ScienceNote[]>([]);
   // Base map choices; until layers.json loads (or if it's missing) just the plain basemap.
   const fallbackLayer: MapLayer = { id: 'hirise', label: 'HiRISE (grey)', src: source.basemap.url ?? '', resolution: '', citation: '' };
   const [baseLayers, setBaseLayers] = useState<MapLayer[]>([fallbackLayer]);
@@ -49,6 +52,7 @@ export default function App() {
       .catch((e) => setError(String(e)));
     // Images are optional: the map still works if this file is missing.
     source.loadImages().then(setImages).catch(() => setImages([]));
+    source.loadScience().then(setScience).catch(() => setScience([]));
     // Elevation is optional too: without it the 3D button is just disabled.
     source.loadElevation().then(setElevation).catch(() => setElevation(null));
     source
@@ -68,6 +72,23 @@ export default function App() {
 
   const planRoute = useMemo(() => (grid ? buildRoute(grid, ROVER, waypoints) : null), [grid, waypoints]);
   const sim = useSim(grid, navRoute, ROVER, speed);
+
+  // Mission objectives tick themselves off from what the crew actually does.
+  useEffect(() => {
+    const target = points.find((p) => p.type === 'target') ?? null;
+    const samples = points.filter((p) => p.type === 'sample');
+    const next = updateMission(mission, {
+      navigating: mode === 'navigate',
+      lead: sim.rt.state.astronauts[0],
+      target,
+      o2_min_left: sim.rt.state.o2_min_left,
+      scienceOpened,
+      samplesCollected: samples.filter((s) => collected[s.id]).length,
+      samplesTotal: samples.length,
+    });
+    if (!sameFlags(next, mission)) setMission(next);
+  }, [mission, mode, points, scienceOpened, collected, sim.rt.state]);
+
 
   // Plan mode previews the boundary as it will look on ARRIVAL at the last waypoint.
   const planPreview = useMemo(() => {
@@ -99,12 +120,18 @@ export default function App() {
   const ahead = pointAlong(activeRoute, sim.rt.progress_m + 30);
   const eyeAhead = Math.hypot(ahead.x - lead.x, ahead.y - lead.y) > 1 ? ahead : ROVER;
   const addWaypoint = mode === 'plan' ? (p: XY) => setWaypoints((w) => [...w, p]) : undefined;
-  const openPoint = (pt: MapPoint) => setSelected(pt.type === 'target' || pt.type === 'sample' ? pt : null);
+  const openPoint = (pt: MapPoint) => {
+    const isScience = pt.type === 'target' || pt.type === 'sample';
+    setSelected(isScience ? pt : null);
+    if (isScience) setScienceOpened(true);
+  };
 
   const base = baseLayers.find((l) => l.id === baseId) ?? baseLayers[0];
   const baseUrl = base?.src || source.basemap.url;
 
   const switchMode = (m: Mode) => {
+    // A new run starts the walking objectives over; science and samples stay done.
+    setMission((f) => ({ ...f, reachedTarget: false, returnedSafely: false }));
     setMode(m);
     sim.reset();
     setNavRoute(m === 'navigate' ? planRoute : null);
@@ -175,7 +202,7 @@ export default function App() {
           {hover && <HoverReadout p={hover} grid={grid} elevation={elevation} />}
         </div>
         <aside>
-          {selected && <ImagePanel point={selected} images={images} onClose={() => setSelected(null)} />}
+          {selected && <ImagePanel point={selected} images={images} science={science} onClose={() => setSelected(null)} />}
           {mode === 'plan' ? (
             <PlanControls
               waypointCount={waypoints.length}
@@ -194,6 +221,7 @@ export default function App() {
             />
           )}
           <Readout state={sim.rt.state} safe={safe} />
+          <MissionPanel flags={mission} />
           <SampleChecklist points={points} collected={collected} onToggle={(id) => setCollected((c) => ({ ...c, [id]: !c[id] }))} />
           <DustDevilPanel clock={sim.rt.state.clock_local} />
           <LayerPanel
